@@ -340,6 +340,9 @@ extern char_u *vimpty_getenv(const char_u *string);	// in misc2.c
 #  ifdef FEAT_GUI_PHOTON
 #   include "gui_photon.pro"
 #  endif
+#  ifdef FEAT_GUI_IUP
+#   include "gui_iup.pro"
+#  endif
 # endif	// FEAT_GUI
 
 # ifdef FEAT_OLE
