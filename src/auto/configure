@@ -655,6 +655,7 @@ GUI_X_LIBS
 GUITYPE
 GUI_LIB_LOC
 GUI_INC_LOC
+IUP_LIBNAME
 NARROW_PROTO
 MOTIF_LIBNAME
 CAIRO_CPPFLAGS
@@ -879,6 +880,7 @@ enable_icon_cache_update
 enable_desktop_database_update
 enable_hardcopy_pango
 with_motif_lib
+with_iup_static
 with_tlib
 enable_largefile
 enable_canberra
@@ -1545,7 +1547,7 @@ Optional Features:
   --disable-farsi         Deprecated.
   --enable-xim            Include XIM input support.
   --enable-fontset        Include X fontset output support.
-  --enable-gui=OPTS       X11 GUI. default=auto OPTS=auto/no/gtk2/gnome2/gtk3/gtk4/motif/haiku/photon/carbon
+  --enable-gui=OPTS       X11 GUI. default=auto OPTS=auto/no/gtk2/gnome2/gtk3/gtk4/motif/iup/haiku/photon/carbon
   --enable-gtk2-check     If auto-select GUI, check for GTK+ 2 default=yes
   --enable-gnome-check    If GTK GUI, check for GNOME default=no
   --enable-gtk4-check     If auto-select GUI, check for GTK 4 default=yes
@@ -1595,6 +1597,7 @@ Optional Packages:
   --with-gnome-libs=DIR   Specify location of GNOME libs
   --with-gnome            Specify prefix for GNOME files
   --with-motif-lib=STRING Library for Motif
+  --with-iup-static       Link the IUP library statically.
   --with-tlib=library     terminal library to be used
 
 Some influential environment variables:
@@ -10491,6 +10494,7 @@ SKIP_GTK3=YES
 SKIP_GTK4=YES
 SKIP_GNOME=YES
 SKIP_MOTIF=YES
+SKIP_IUP=YES
 SKIP_PHOTON=YES
 SKIP_HAIKU=YES
 GUITYPE=NONE
@@ -10536,6 +10540,9 @@ printf "%s\n" "yes - automatic GUI support" >&6; }
 		gui_auto=yes ;;
     auto)	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: auto - disable GUI support for Mac OS" >&5
 printf "%s\n" "auto - disable GUI support for Mac OS" >&6; } ;;
+    iup)	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: IUP GUI support" >&5
+printf "%s\n" "IUP GUI support" >&6; }
+		SKIP_IUP= ;;
     *)		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: Sorry, $enable_gui GUI is not supported" >&5
 printf "%s\n" "Sorry, $enable_gui GUI is not supported" >&6; } ;;
   esac
@@ -10568,6 +10575,9 @@ printf "%s\n" "GTK 4.x GUI support" >&6; }
     motif)	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: Motif GUI support" >&5
 printf "%s\n" "Motif GUI support" >&6; }
 		SKIP_MOTIF=;;
+    iup)	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: IUP GUI support" >&5
+printf "%s\n" "IUP GUI support" >&6; }
+		SKIP_IUP=;;
     *)		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: Sorry, $enable_gui GUI is not supported" >&5
 printf "%s\n" "Sorry, $enable_gui GUI is not supported" >&6; } ;;
   esac
@@ -12190,6 +12200,56 @@ if test "x$GUITYPE:$enable_fontset" = "xGTK:yes"; then
 printf "%s\n" "GTK+ 2 GUI selected; fontset has been disabled" >&6; }
   enable_fontset="no"
 fi
+
+IUP_LIBNAME=
+if test -z "$SKIP_IUP"; then
+  { printf '%s\n' "$as_me:${as_lineno-$LINENO}: checking --with-iup-static argument" >&5
+printf %s "checking --with-iup-static argument... " >&6; }
+
+# Check whether --with-iup-static was given.
+if test ${with_iup_static+y}
+then :
+  withval=$with_iup_static; with_iup_static="$withval"; { printf '%s\n' "$as_me:${as_lineno-$LINENO}: result: $withval" >&5
+printf '%s\n' "$withval" >&6; }
+else case e in #(
+  e) with_iup_static="no"; { printf '%s\n' "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf '%s\n' "no" >&6; } ;;
+esac
+fi
+
+
+  { printf '%s\n' "$as_me:${as_lineno-$LINENO}: checking for IUP" >&5
+printf %s "checking for IUP... " >&6; }
+  if test "x$PKG_CONFIG" != "xno" && ! $PKG_CONFIG --exists iup; then
+    for iup_pc_dir in /usr/local/lib64/pkgconfig /usr/local/lib/pkgconfig; do
+      if test -f "$iup_pc_dir/iup.pc"; then
+	PKG_CONFIG_PATH="$PKG_CONFIG_PATH${PKG_CONFIG_PATH:+:}$iup_pc_dir"
+	export PKG_CONFIG_PATH
+	break
+      fi
+    done
+  fi
+  if test "x$PKG_CONFIG" != "xno" && $PKG_CONFIG --exists iup; then
+    GUI_INC_LOC=`$PKG_CONFIG --cflags-only-I iup`
+    GUI_LIB_LOC=`$PKG_CONFIG --libs-only-L iup`
+    if test "$with_iup_static" = "yes"; then
+      iup_libdir=`$PKG_CONFIG --variable=libdir iup`
+      if test ! -f "$iup_libdir/libiup.a"; then
+	as_fn_error $? "--with-iup-static: $iup_libdir/libiup.a not found" "$LINENO" 5
+      fi
+      IUP_LIBNAME="$iup_libdir/libiup.a `$PKG_CONFIG --static --libs iup | sed -e 's/-liup //' -e 's/-liup$//'`"
+    else
+      IUP_LIBNAME=`$PKG_CONFIG --libs iup`
+    fi
+    GUITYPE=IUPGUI
+    iup_version=`$PKG_CONFIG --modversion iup`
+    { printf '%s\n' "$as_me:${as_lineno-$LINENO}: result: yes; version $iup_version" >&5
+printf '%s\n' "yes; version $iup_version" >&6; }
+  else
+    as_fn_error $? "cannot find IUP via pkg-config; is iup.pc in PKG_CONFIG_PATH?" "$LINENO" 5
+  fi
+fi
+
 
 if test -z "$SKIP_HAIKU"; then
   GUITYPE=HAIKUGUI
