@@ -653,6 +653,12 @@ directory where configure doesn't look, edit the Makefile to enter the names
 of the directories.  Search for "GUI_INC_LOC" for an example to set
 the Motif directories.
 
+							*gui-x11-iup*
+The IUP GUI is built with --enable-gui=iup.  It uses the IUP toolkit, which
+maps to GTK, Qt, Motif, EFL or FLTK at build time, so one gvim frontend covers
+all of them.  configure finds IUP with pkg-config; --with-iup-static links the
+static library instead.
+
 							*gui-x11-gtk*
 Currently, Vim supports both GTK+ 2 and GTK+ 3.
 
