@@ -104,8 +104,21 @@ endif
 # Set to yes to enable Cscope support.
 CSCOPE=yes
 
+# Set to the IUP install prefix to build the IUP GUI instead of the Win32 GUI.
+# "GUI" should be also set to "yes".
+#IUP=/c/msys64/home/milann/iup-win32
+
+# Set to yes to build the IUP GUI against the WinUI backend.
+#IUPWINUI=yes
+
+ifdef IUP
+DIRECTX=no
+XPM=no
+NETBEANS=no
+else
 # Set to yes to enable Netbeans support (requires CHANNEL).
 NETBEANS=$(GUI)
+endif
 
 # Set to yes to enable inter process communication.
 ifeq (HUGE, $(FEATURES))
@@ -541,7 +554,11 @@ endif # RUBY
 
 # See feature.h for a list of options.
 # Any other defines can be included here.
+ifdef IUP
+DEF_GUI=-DFEAT_GUI_IUP -DFEAT_CLIPBOARD
+else
 DEF_GUI=-DFEAT_GUI_MSWIN -DFEAT_CLIPBOARD
+endif
 DEFINES=-DWIN32 -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER) \
 	-DHAVE_PATHDEF -DFEAT_$(FEATURES) -DHAVE_STDINT_H \
 	$(EXTRA_DEFINES)
@@ -786,7 +803,18 @@ CFLAGS += -g -O0  -fsanitize-recover=all -fsanitize=address -fno-omit-frame-poin
 endif
 
 LIB = -lkernel32 -luser32 -lgdi32 -ladvapi32 -lcomdlg32 -lcomctl32 -lnetapi32 -lversion
+ifdef IUP
+CFLAGS += -I$(IUP)/include/iup
+GUIOBJ =  $(OUTDIR)/gui.o $(OUTDIR)/gui_iup.o
+ ifeq ($(IUPWINUI),yes)
+LIB += $(IUP)/lib/libiup.a -lwindowsapp -lruntimeobject -ld2d1 -ldwrite -luuid -loleaut32 -lole32 -lshell32 -l:libc++.a -l:libc++abi.a
+USE_STDCPLUS = yes
+ else
+LIB += $(IUP)/lib/libiup.a -lmsimg32 -lwinmm -lshlwapi -lshell32 -lgdiplus -luuid -loleaut32 -lole32
+ endif
+else
 GUIOBJ =  $(OUTDIR)/gui.o $(OUTDIR)/gui_w32.o $(OUTDIR)/gui_beval.o
+endif
 CUIOBJ = $(OUTDIR)/iscygpty.o
 OBJ = \
 	$(OUTDIR)/alloc.o \
@@ -1057,6 +1085,9 @@ else ifeq ($(GUI),yes)
 TARGET := gvim$(DEBUG_SUFFIX).exe
 DEFINES += $(DEF_GUI)
 OBJ += $(GUIOBJ)
+ ifdef IUP
+OBJ += $(CUIOBJ)
+ endif
 LFLAGS += -mwindows
 OUTDIR = gobj$(DEBUG_SUFFIX)$(MZSCHEME_SUFFIX)$(ARCH)
 MAIN_TARGET = $(TARGET)
@@ -1368,6 +1399,9 @@ $(OUTDIR)/beval.o:	beval.c $(INCL) $(GUI_INCL)
 
 $(OUTDIR)/gui_beval.o:	gui_beval.c $(INCL) $(GUI_INCL)
 	$(CC) -c $(CFLAGS) gui_beval.c -o $@
+
+$(OUTDIR)/gui_iup.o:	gui_iup.c $(INCL) $(GUI_INCL)
+	$(CC) -c $(CFLAGS) gui_iup.c -o $@
 
 $(OUTDIR)/gui_w32.o:	gui_w32.c $(INCL) $(GUI_INCL) version.h
 	$(CC) -c $(CFLAGS) gui_w32.c -o $@

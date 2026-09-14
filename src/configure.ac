@@ -2641,7 +2641,7 @@ test "x$with_x" = xno -a "x$HAIKU" != "xyes" -a "x$MACOS_X" != "xyes" -a "x$QNX"
 
 AC_MSG_CHECKING(--enable-gui argument)
 AC_ARG_ENABLE(gui,
- [  --enable-gui[=OPTS]       X11 GUI. [default=auto] [OPTS=auto/no/gtk2/gnome2/gtk3/gtk4/motif/haiku/photon/carbon]], , enable_gui="auto")
+ [  --enable-gui[=OPTS]       X11 GUI. [default=auto] [OPTS=auto/no/gtk2/gnome2/gtk3/gtk4/motif/iup/haiku/photon/carbon]], , enable_gui="auto")
 
 dnl Canonicalize the --enable-gui= argument so that it can be easily compared.
 dnl Do not use character classes for portability with old tools.
@@ -2654,6 +2654,7 @@ SKIP_GTK3=YES
 SKIP_GTK4=YES
 SKIP_GNOME=YES
 SKIP_MOTIF=YES
+SKIP_IUP=YES
 SKIP_PHOTON=YES
 SKIP_HAIKU=YES
 GUITYPE=NONE
@@ -2687,6 +2688,8 @@ elif test "x$MACOS_X" = "xyes" -a "x$with_x" = "xno" ; then
     yes|"")	AC_MSG_RESULT(yes - automatic GUI support)
 		gui_auto=yes ;;
     auto)	AC_MSG_RESULT(auto - disable GUI support for Mac OS) ;;
+    iup)	AC_MSG_RESULT(IUP GUI support)
+		SKIP_IUP= ;;
     *)		AC_MSG_RESULT([Sorry, $enable_gui GUI is not supported]) ;;
   esac
 else
@@ -2711,6 +2714,8 @@ else
 		SKIP_GTK4=;;
     motif)	AC_MSG_RESULT(Motif GUI support)
 		SKIP_MOTIF=;;
+    iup)	AC_MSG_RESULT(IUP GUI support)
+		SKIP_IUP=;;
     *)		AC_MSG_RESULT([Sorry, $enable_gui GUI is not supported]) ;;
   esac
 
@@ -3442,6 +3447,45 @@ if test "x$GUITYPE:$enable_fontset" = "xGTK:yes"; then
   AC_MSG_RESULT(GTK+ 2 GUI selected; fontset has been disabled)
   enable_fontset="no"
 fi
+
+IUP_LIBNAME=
+if test -z "$SKIP_IUP"; then
+  AC_MSG_CHECKING(--with-iup-static argument)
+  AC_ARG_WITH(iup-static,
+    [  --with-iup-static       Link the IUP library statically.],
+    [with_iup_static="$withval"; AC_MSG_RESULT($withval)],
+    [with_iup_static="no"; AC_MSG_RESULT(no)])
+
+  AC_MSG_CHECKING(for IUP)
+  if test "x$PKG_CONFIG" != "xno" && ! $PKG_CONFIG --exists iup; then
+    for iup_pc_dir in /usr/local/lib64/pkgconfig /usr/local/lib/pkgconfig; do
+      if test -f "$iup_pc_dir/iup.pc"; then
+	PKG_CONFIG_PATH="$PKG_CONFIG_PATH${PKG_CONFIG_PATH:+:}$iup_pc_dir"
+	export PKG_CONFIG_PATH
+	break
+      fi
+    done
+  fi
+  if test "x$PKG_CONFIG" != "xno" && $PKG_CONFIG --exists iup; then
+    GUI_INC_LOC=`$PKG_CONFIG --cflags-only-I iup`
+    GUI_LIB_LOC=`$PKG_CONFIG --libs-only-L iup`
+    if test "$with_iup_static" = "yes"; then
+      iup_libdir=`$PKG_CONFIG --variable=libdir iup`
+      if test ! -f "$iup_libdir/libiup.a"; then
+	AC_MSG_ERROR([--with-iup-static: $iup_libdir/libiup.a not found])
+      fi
+      IUP_LIBNAME="$iup_libdir/libiup.a `$PKG_CONFIG --static --libs iup | sed -e 's/-liup //' -e 's/-liup$//'`"
+    else
+      IUP_LIBNAME=`$PKG_CONFIG --libs iup`
+    fi
+    GUITYPE=IUPGUI
+    iup_version=`$PKG_CONFIG --modversion iup`
+    AC_MSG_RESULT([yes; version $iup_version])
+  else
+    AC_MSG_ERROR([cannot find IUP via pkg-config; is iup.pc in PKG_CONFIG_PATH?])
+  fi
+fi
+AC_SUBST(IUP_LIBNAME)
 
 dnl There is no test for the Haiku GUI, if it's selected it's used
 if test -z "$SKIP_HAIKU"; then

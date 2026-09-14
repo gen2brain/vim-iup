@@ -357,6 +357,8 @@ CClink = $(CC)
 #CONF_OPT_GUI = --enable-gui=gtk3 --disable-gtktest
 #CONF_OPT_GUI = --enable-gui=motif
 #CONF_OPT_GUI = --enable-gui=motif --with-motif-lib="-static -lXm -shared"
+#CONF_OPT_GUI = --enable-gui=iup
+#CONF_OPT_GUI = --enable-gui=iup --with-iup-static
 
 # Uncomment this line to run an individual test with gvim.
 #GUI_TESTARG = GUI_FLAG=-g
@@ -1307,6 +1309,20 @@ PHOTONGUI_MAN_TARGETS = yes
 PHOTONGUI_TESTTARGET = gui
 PHOTONGUI_BUNDLE =
 
+# IUP GUI
+IUPGUI_SRC	= gui.c gui_iup.c
+IUPGUI_OBJ	= objects/gui.o objects/gui_iup.o
+IUPGUI_DEFS	= -DFEAT_GUI_IUP
+IUPGUI_IPATH	= $(GUI_INC_LOC)
+IUPGUI_LIBS_DIR	= $(GUI_LIB_LOC)
+IUPGUI_LIBS1	= $(IUP_LIBNAME)
+IUPGUI_LIBS2	=
+IUPGUI_INSTALL	= install_normal install_gui_extra
+IUPGUI_TARGETS	= installglinks
+IUPGUI_MAN_TARGETS = yes
+IUPGUI_TESTTARGET = gui
+IUPGUI_BUNDLE	=
+
 ### Haiku GUI
 HAIKUGUI_SRC	= gui.c gui_haiku.cc
 HAIKUGUI_OBJ	= objects/gui.o objects/gui_haiku.o
@@ -1322,8 +1338,8 @@ HAIKUGUI_TESTTARGET = gui
 HAIKUGUI_BUNDLE =
 
 # All GUI files
-ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_gtk4.c gui_gtk4_f.c gui_gtk4_cb.c gui_gtk4_da.c gui_gtk4_tb.c gui_gtk4_menu.c gui_motif.c gui_xmdlg.c gui_xmebw.c gui_gtk_x11.c gui_x11.c gui_haiku.cc
-ALL_GUI_PRO  = proto/gui.pro proto/gui_gtk.pro proto/gui_gtk4.pro proto/gui_motif.pro proto/gui_xmdlg.pro proto/gui_gtk_x11.pro proto/gui_x11.pro proto/gui_w32.pro proto/gui_photon.pro
+ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_gtk4.c gui_gtk4_f.c gui_gtk4_cb.c gui_gtk4_da.c gui_gtk4_tb.c gui_gtk4_menu.c gui_motif.c gui_xmdlg.c gui_xmebw.c gui_gtk_x11.c gui_x11.c gui_haiku.cc gui_iup.c
+ALL_GUI_PRO  = proto/gui.pro proto/gui_gtk.pro proto/gui_gtk4.pro proto/gui_motif.pro proto/gui_xmdlg.pro proto/gui_gtk_x11.pro proto/gui_x11.pro proto/gui_w32.pro proto/gui_photon.pro proto/gui_iup.pro
 
 # }}}
 
@@ -3462,6 +3478,9 @@ objects/gui_xim.o: gui_xim.c
 
 objects/gui_photon.o: gui_photon.c
 	$(CCC) -o $@ gui_photon.c
+
+objects/gui_iup.o: gui_iup.c
+	$(CCC) -o $@ gui_iup.c
 
 objects/highlight.o: highlight.c
 	$(CCC) -o $@ highlight.c
