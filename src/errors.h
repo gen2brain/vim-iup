@@ -560,7 +560,8 @@ EXTERN char e_unknown_fontset_str[]
 	INIT(= N_("E234: Unknown fontset: %s"));
 # endif
 # if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) \
-	|| defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_HAIKU)
+	|| defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MSWIN) \
+	|| defined(FEAT_GUI_HAIKU) || defined(FEAT_GUI_IUP)
 EXTERN char e_unknown_font_str[]
 	INIT(= N_("E235: Unknown font: %s"));
 # endif

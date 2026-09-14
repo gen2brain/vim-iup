@@ -829,7 +829,7 @@ gui_init(void)
 						     &general_beval_cb, NULL);
 	}
 #  else
-#   ifdef FEAT_GUI_MSWIN
+#   if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_IUP)
 	balloonEval = gui_mch_create_beval_area(NULL, NULL,
 						     &general_beval_cb, NULL);
 #   endif
@@ -881,7 +881,7 @@ gui_exit(int rc)
 }
 
 #if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11) || defined(FEAT_GUI_MSWIN) \
-	|| defined(FEAT_GUI_PHOTON)
+	|| defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_IUP)
 # define NEED_GUI_UPDATE_SCREEN 1
 /*
  * Called when the GUI shell is closed by the user.  If there are no changed
@@ -1537,7 +1537,8 @@ gui_position_components(int total_width UNUSED)
 	text_area_x += gui.scrollbar_width;
 
     text_area_y = 0;
-#if defined(FEAT_MENU) && !(defined(FEAT_GUI_GTK) || defined(FEAT_GUI_PHOTON))
+#if defined(FEAT_MENU) && !(defined(FEAT_GUI_GTK) || defined(FEAT_GUI_PHOTON) \
+	|| defined(FEAT_GUI_IUP))
     gui.menu_width = total_width;
     if (gui.menu_is_active)
 	text_area_y += gui.menu_height;
@@ -1623,7 +1624,7 @@ gui_get_base_height(void)
     base_height = 2 * gui.border_offset;
     if (gui.which_scrollbars[SBAR_BOTTOM])
 	base_height += gui.scrollbar_height;
-#ifdef FEAT_GUI_GTK
+#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_IUP)
     // We can't take the sizes properly into account until anything is
     // realized.  Therefore we recalculate all the values here just before
     // setting the size. (--mdcki)
@@ -1797,7 +1798,7 @@ gui_set_shellsize(
     int		min_height;
     int		screen_w;
     int		screen_h;
-#ifdef FEAT_GUI_GTK
+#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_IUP)
     int		un_maximize = mustset;
     int		did_adjust = 0;
 #endif
@@ -1806,7 +1807,7 @@ gui_set_shellsize(
     if (!gui.shell_created)
 	return;
 
-#if defined(MSWIN) || defined(FEAT_GUI_GTK)
+#if defined(MSWIN) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_IUP)
     // If not setting to a user specified size and maximized, calculate the
     // number of characters that fit in the maximized window.
     // FIXME: gui_mch_newfont() is called here even when the font hasn't
@@ -1841,7 +1842,7 @@ gui_set_shellsize(
 	    if (Columns < MIN_COLUMNS)
 		Columns = MIN_COLUMNS;
 	    width = Columns * gui.char_width + base_width;
-#ifdef FEAT_GUI_GTK
+#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_IUP)
 	    ++did_adjust;
 #endif
 	}
@@ -1850,11 +1851,11 @@ gui_set_shellsize(
 	    Rows = (screen_h - base_height) / gui.char_height;
 	    check_shellsize();
 	    height = Rows * gui.char_height + base_height;
-#ifdef FEAT_GUI_GTK
+#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_IUP)
 	    ++did_adjust;
 #endif
 	}
-#ifdef FEAT_GUI_GTK
+#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_IUP)
 	if (did_adjust == 2 || (width + gui.char_width >= screen_w
 				     && height + gui.char_height >= screen_h))
 	    // don't unmaximize if at maximum size
@@ -1873,7 +1874,7 @@ gui_set_shellsize(
     min_height = base_height + MIN_LINES * gui.char_height;
     min_height += tabline_height() * gui.char_height;
 
-#ifdef FEAT_GUI_GTK
+#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_IUP)
     if (un_maximize)
     {
 	// If the window size is smaller than the screen unmaximize the
@@ -4537,7 +4538,8 @@ gui_update_scrollbars(
 	    // Calculate height and position in pixels
 	    h = (sb->height + sb->status_height) * gui.char_height;
 	    y = sb->top * gui.char_height + gui.border_offset;
-#if defined(FEAT_MENU) && !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_MOTIF) && !defined(FEAT_GUI_PHOTON)
+#if defined(FEAT_MENU) && !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_MOTIF) \
+	&& !defined(FEAT_GUI_PHOTON) && !defined(FEAT_GUI_IUP)
 	    if (gui.menu_is_active)
 		y += gui.menu_height;
 #endif
@@ -5224,7 +5226,7 @@ ex_gui(exarg_T *eap)
 
 #if (defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) \
 	    || defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_PHOTON) \
-	    || defined(FEAT_GUI_HAIKU)) \
+	    || defined(FEAT_GUI_HAIKU) || defined(FEAT_GUI_IUP)) \
 	    && defined(FEAT_TOOLBAR)
 /*
  * This is shared between Haiku, Motif, and GTK.
@@ -5280,7 +5282,8 @@ gui_find_iconfile(char_u *name, char_u *buffer, char *ext)
 # endif
 #endif
 
-#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11)|| defined(FEAT_GUI_HAIKU)
+#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11)|| defined(FEAT_GUI_HAIKU) \
+	|| (defined(FEAT_GUI_IUP) && !defined(MSWIN))
     void
 display_errors(void)
 {

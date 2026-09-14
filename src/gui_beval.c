@@ -13,7 +13,7 @@
 #if defined(FEAT_BEVAL_GUI)
 
 // on Win32 only get_beval_info() is required
-#if !defined(FEAT_GUI_MSWIN)
+#if !defined(FEAT_GUI_MSWIN) && !defined(FEAT_GUI_IUP)
 
 # ifdef FEAT_GUI_GTK
 #  ifdef USE_GTK4

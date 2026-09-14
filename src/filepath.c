@@ -2561,7 +2561,7 @@ do_browse(
 	    filter = BROWSE_FILTER_DEFAULT;
 	if (flags & BROWSE_DIR)
 	{
-#  if defined(FEAT_GUI_GTK) || defined(MSWIN)
+#  if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_IUP) || defined(MSWIN)
 	    // For systems that have a directory dialog.
 	    fname = gui_mch_browsedir(title, initdir);
 #  else
@@ -2569,7 +2569,7 @@ do_browse(
 	    // remove the file name.
 	    fname = gui_mch_browse(0, title, dflt, ext, initdir, (char_u *)"");
 #  endif
-#  if !defined(FEAT_GUI_GTK)
+#  if !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_IUP)
 	    // Win32 adds a dummy file name, others return an arbitrary file
 	    // name.  GTK+ 2 returns only the directory,
 	    if (fname != NULL && *fname != NUL && !mch_isdir(fname))

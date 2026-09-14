@@ -571,7 +571,7 @@ free_all_mem(void)
 # if defined(USE_XSMP)
     xsmp_close();
 # endif
-# ifdef FEAT_GUI_GTK
+# if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_IUP)
     gui_mch_free_all();
 # endif
 # ifdef FEAT_TCL

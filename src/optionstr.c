@@ -952,7 +952,7 @@ expand_set_opt_generic(
     return ret;
 }
 
-#if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_GTK)
+#if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_IUP)
 static garray_T *expand_cb_ga;
 static optexpand_T *expand_cb_args;
 
@@ -2725,7 +2725,7 @@ did_set_guifont(optset_T *args UNUSED)
     if (gui.in_use)
     {
 	p = p_guifont;
-# if defined(FEAT_GUI_GTK)
+# if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_IUP)
 	// Put up a font dialog and let the user select a new value.
 	// If this is cancelled go back to the old value but don't
 	// give an error message.
@@ -2765,7 +2765,7 @@ expand_set_guifont(optexpand_T *args, int *numMatches, char_u ***matches)
     if (!gui.in_use)
 	return FAIL;
 
-# if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_GTK)
+# if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_IUP)
     char_u **varp = (char_u **)args->oe_varp;
     int wide = (varp == &p_guifontwide);
 

@@ -127,6 +127,12 @@ typedef struct {
  */
 #include "regexp.h"
 
+#ifdef FEAT_GUI_IUP
+# ifndef __IUP_H
+  typedef struct Ihandle_ Ihandle;
+# endif
+#endif
+
 /*
  * This is here because gui.h needs the pos_T and win_T, and win_T needs gui.h
  * for scrollbar_T.
@@ -4769,6 +4775,10 @@ struct VimMenu
 # ifdef FEAT_GUI_PHOTON
     PtWidget_t	*id;
     PtWidget_t	*submenu_id;
+# endif
+# ifdef FEAT_GUI_IUP
+    Ihandle	*id;		    // Id of menu item
+    Ihandle	*submenu_id;	    // If this is submenu, add children here
 # endif
 };
 #else

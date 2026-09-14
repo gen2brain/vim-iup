@@ -3324,6 +3324,8 @@ list_version(void)
     msg_puts(_("with Haiku GUI."));
 #elif defined(FEAT_GUI_PHOTON)
     msg_puts(_("with Photon GUI."));
+#elif defined(FEAT_GUI_IUP)
+    msg_puts(_("with IUP GUI."));
 #elif defined(MSWIN)
     msg_puts(_("with GUI."));
 #endif

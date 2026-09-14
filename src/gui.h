@@ -52,6 +52,7 @@ typedef GdkEvent GdkEventKey;	// GTK4: GdkEventKey merged into GdkEvent
 # include "photon/PxProto.h"
 #endif
 
+
 /*
  * On some systems scrolling needs to be done right away instead of in the
  * main loop.
@@ -65,7 +66,8 @@ typedef GdkEvent GdkEventKey;	// GTK4: GdkEventKey merged into GdkEvent
  */
 #if (defined(FEAT_DND) && defined(FEAT_GUI_GTK)) \
 	|| defined(FEAT_GUI_MSWIN) \
-	|| defined(FEAT_GUI_HAIKU)
+	|| defined(FEAT_GUI_HAIKU) \
+	|| defined(FEAT_GUI_IUP)
 # define HAVE_DROP_FILE
 #endif
 
@@ -142,7 +144,7 @@ typedef GdkEvent GdkEventKey;	// GTK4: GdkEventKey merged into GdkEvent
 #define DRAW_BOLD		0x02	// draw bold text
 #define DRAW_UNDERL		0x04	// draw underline text
 #define DRAW_UNDERC		0x08	// draw undercurl text
-#if defined(FEAT_GUI_GTK)
+#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_IUP)
 # define DRAW_ITALIC		0x10	// draw italic text
 #endif
 #define DRAW_CURSOR		0x20	// drawing block cursor (win32)
@@ -205,6 +207,9 @@ typedef struct GuiScrollbar
 #ifdef FEAT_GUI_PHOTON
     PtWidget_t	*id;
 #endif
+#ifdef FEAT_GUI_IUP
+    Ihandle	*id;
+#endif
 } scrollbar_T;
 
 typedef long	    guicolor_T;	// handle for a GUI color; for X11 this should
@@ -222,7 +227,7 @@ typedef long	    guicolor_T;	// handle for a GUI color; for X11 this should
 # define NOFONT		(GuiFont)NULL
 # define NOFONTSET	(GuiFontset)NULL
 #else
-# ifdef FEAT_GUI_PHOTON
+# if defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_IUP)
   typedef char		*GuiFont;
   typedef char		*GuiFontset;
 #  define NOFONT	(GuiFont)NULL

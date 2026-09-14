@@ -435,7 +435,7 @@
  * +xfontset		X fontset support.  For outputting wide characters.
  */
 #ifndef FEAT_XFONTSET
-# if defined(HAVE_X11) && !defined(FEAT_GUI_GTK)
+# if defined(HAVE_X11) && !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_IUP)
 #  define FEAT_XFONTSET
 # else
 // #  define FEAT_XFONTSET
@@ -500,7 +500,8 @@
 		|| defined(FEAT_GUI_MSWIN) \
 		|| (defined(FEAT_GUI_MOTIF) && defined(HAVE_XPM)) \
 		|| defined(FEAT_GUI_PHOTON) \
-		|| defined(FEAT_GUI_HAIKU))
+		|| defined(FEAT_GUI_HAIKU) \
+		|| defined(FEAT_GUI_IUP))
 
 # define FEAT_TOOLBAR
 #endif
@@ -525,7 +526,8 @@
     && (defined(FEAT_GUI_GTK) \
 	|| (defined(FEAT_GUI_MOTIF) && defined(HAVE_XM_NOTEBOOK_H)) \
 	|| defined(FEAT_GUI_HAIKU) \
-	|| defined(FEAT_GUI_MSWIN))
+	|| defined(FEAT_GUI_MSWIN) \
+	|| defined(FEAT_GUI_IUP))
 # define FEAT_GUI_TABLINE
 #endif
 
@@ -543,7 +545,8 @@
 #if defined(FEAT_NORMAL)
 # define FEAT_BROWSE_CMD
 # if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) \
-	|| defined(FEAT_GUI_GTK) || defined(FEAT_GUI_HAIKU) || defined(FEAT_GUI_PHOTON)
+	|| defined(FEAT_GUI_GTK) || defined(FEAT_GUI_HAIKU) \
+	|| defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_IUP)
 #  define FEAT_BROWSE
 # endif
 #endif
@@ -567,7 +570,8 @@
 	|| defined(FEAT_GUI_GTK) \
 	|| defined(FEAT_GUI_PHOTON) \
 	|| defined(FEAT_GUI_HAIKU) \
-	|| defined(FEAT_GUI_MSWIN)
+	|| defined(FEAT_GUI_MSWIN) \
+	|| defined(FEAT_GUI_IUP)
 #  define FEAT_CON_DIALOG
 #  define FEAT_GUI_DIALOG
 # else
@@ -584,7 +588,8 @@
 	(defined(FEAT_GUI_MOTIF) \
 	 || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN) \
 	 || defined(FEAT_GUI_PHOTON) \
-	 || defined(FEAT_GUI_HAIKU))
+	 || defined(FEAT_GUI_HAIKU) \
+	 || defined(FEAT_GUI_IUP))
 # define FEAT_GUI_TEXTDIALOG
 # ifndef ALWAYS_USE_GUI
 #  define FEAT_CON_DIALOG
@@ -938,7 +943,7 @@
 /*
  * +dnd		Drag'n'drop support.  Always used for the GTK+ GUI.
  */
-#if defined(FEAT_CLIPBOARD) && defined(FEAT_GUI_GTK)
+#if defined(FEAT_CLIPBOARD) && (defined(FEAT_GUI_GTK) || defined(FEAT_GUI_IUP))
 # define FEAT_DND
 #endif
 
@@ -948,7 +953,7 @@
 #endif
 
 #if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MOTIF) \
-	|| defined(MSWIN_FIND_REPLACE)
+	|| defined(FEAT_GUI_IUP) || defined(MSWIN_FIND_REPLACE)
 # define FIND_REPLACE_DIALOG 1
 #endif
 
@@ -1012,7 +1017,8 @@
 # endif
 # if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) \
 	|| defined(FEAT_GUI_GTK) \
-	|| defined(FEAT_GUI_PHOTON)
+	|| defined(FEAT_GUI_PHOTON) \
+	|| defined(FEAT_GUI_IUP)
 #  define FEAT_MOUSESHAPE
 # endif
 #endif
@@ -1155,7 +1161,7 @@
 #if defined(FEAT_NORMAL) || defined(FEAT_NETBEANS_INTG) || defined(FEAT_PROP_POPUP)
 # define FEAT_SIGNS
 # if (defined(FEAT_GUI_MOTIF) && defined(HAVE_X11_XPM_H)) \
-	|| defined(FEAT_GUI_GTK) \
+	|| defined(FEAT_GUI_GTK) || defined(FEAT_GUI_IUP) \
 	|| (defined(MSWIN) && defined(FEAT_GUI))
 #  define FEAT_SIGN_ICONS
 # endif
@@ -1167,13 +1173,15 @@
  *			Only for GUIs where it was implemented.
  */
 #if (defined(FEAT_GUI_MOTIF) \
-	|| defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN)) \
+	|| defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN) \
+	|| defined(FEAT_GUI_IUP)) \
 	&& (   ((defined(FEAT_TOOLBAR) || defined(FEAT_GUI_TABLINE)) \
-		&& !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_MSWIN)) \
+		&& !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_MSWIN) \
+		&& !defined(FEAT_GUI_IUP)) \
 	    || defined(FEAT_NETBEANS_INTG) || defined(FEAT_EVAL))
 # define FEAT_BEVAL_GUI
 # if !defined(FEAT_XFONTSET) && !defined(FEAT_GUI_GTK) \
-	&& !defined(FEAT_GUI_MSWIN)
+	&& !defined(FEAT_GUI_MSWIN) && !defined(FEAT_GUI_IUP)
 #  define FEAT_XFONTSET
 # endif
 #endif
