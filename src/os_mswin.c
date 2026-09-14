@@ -42,7 +42,7 @@ FILE* fdDump = NULL;
 extern char g_szOrigTitle[];
 #endif
 
-#ifdef FEAT_GUI
+#ifdef FEAT_GUI_MSWIN
 extern HWND s_hwnd;
 #else
 static HWND s_hwnd = 0;	    // console window handle, set by GetConsoleHwnd()
