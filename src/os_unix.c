@@ -1922,7 +1922,7 @@ get_x11_windis(void)
 	did_set_error_handler = TRUE;
     }
 
-# if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK)
+# if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_IUP)
     if (gui.in_use)
     {
 	/*
@@ -2336,7 +2336,8 @@ mch_settitle(char_u *title, char_u *icon)
 	type = 1;
 #endif
 #if defined(FEAT_GUI_PHOTON) \
-    || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_HAIKU)
+    || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_HAIKU) \
+    || defined(FEAT_GUI_IUP)
     if (gui.in_use)
 	type = 1;
 #endif
@@ -2363,13 +2364,13 @@ mch_settitle(char_u *title, char_u *icon)
 	    term_settitle(title);
 #ifdef FEAT_X11
 	else
-# ifdef FEAT_GUI_GTK
-	if (!gui.in_use)		// don't do this if GTK+ is running
+# if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_IUP)
+	if (!gui.in_use)		// don't do this if the GUI is running
 # endif
 	    set_x11_title(title);		// x11
 #endif
 #if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_HAIKU) \
-	|| defined(FEAT_GUI_PHOTON)
+	|| defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_IUP)
 	else
 	    gui_mch_settitle(title, icon);
 #endif
@@ -2394,8 +2395,8 @@ mch_settitle(char_u *title, char_u *icon)
 	}
 #ifdef FEAT_X11
 	else
-# ifdef FEAT_GUI_GTK
-	if (!gui.in_use)		// don't do this if GTK+ is running
+# if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_IUP)
+	if (!gui.in_use)		// don't do this if the GUI is running
 # endif
 	    set_x11_icon(icon);			// x11
 #endif
