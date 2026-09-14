@@ -7764,7 +7764,7 @@ check_for_codes_from_term(void)
 }
 #endif
 
-#if defined(MSWIN) && (!defined(FEAT_GUI) || defined(VIMDLL))
+#if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
 static char ksme_str[20];
 static char ksmr_str[20];
 static char ksmd_str[20];
