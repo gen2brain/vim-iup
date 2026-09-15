@@ -971,6 +971,7 @@ gui_mch_init(void)
 {
     IupSetGlobal("UTF8MODE", "YES");
     IupSetGlobal("UTF8MODEFILE", "YES");
+    IupSetGlobal("APPID", "gvim-iup");
 
     set_option_value_give_err((char_u *)"termencoding",
 						    0L, (char_u *)"utf-8", 0);
@@ -1086,6 +1087,74 @@ iup_map_menu_tree(vimmenu_T *menu)
 }
 #endif
 
+    static int
+iup_xpm_color(const char *line, int cpp, unsigned char *rgba)
+{
+    const char	*p = line + cpp;
+    int		r, g, b;
+
+    while (*p != NUL)
+    {
+	while (*p == ' ' || *p == '\t')
+	    p++;
+	if (p[0] == 'c' && (p[1] == ' ' || p[1] == '\t'))
+	{
+	    p++;
+	    while (*p == ' ' || *p == '\t')
+		p++;
+	    if (*p == '#' && sscanf(p + 1, "%2x%2x%2x", &r, &g, &b) == 3)
+	    {
+		rgba[0] = (unsigned char)r;
+		rgba[1] = (unsigned char)g;
+		rgba[2] = (unsigned char)b;
+		rgba[3] = 255;
+	    }
+	    else
+		rgba[0] = rgba[1] = rgba[2] = rgba[3] = 0;
+	    return OK;
+	}
+	while (*p != NUL && *p != ' ' && *p != '\t')
+	    p++;
+    }
+    return FAIL;
+}
+
+    static Ihandle *
+iup_xpm_image(char **xpm)
+{
+    unsigned char   palette[256][4];
+    unsigned char   *pixels;
+    Ihandle	    *image;
+    int		    w, h, ncolors, cpp, i, x, y;
+
+    if (xpm == NULL || sscanf(xpm[0], "%d %d %d %d", &w, &h, &ncolors, &cpp)
+									 != 4)
+	return NULL;
+    if (cpp != 1 || w <= 0 || h <= 0 || ncolors <= 0)
+	return NULL;
+
+    memset(palette, 0, sizeof(palette));
+    for (i = 0; i < ncolors; i++)
+	iup_xpm_color(xpm[1 + i], cpp, palette[(unsigned char)xpm[1 + i][0]]);
+
+    pixels = alloc((size_t)w * h * 4);
+    if (pixels == NULL)
+	return NULL;
+
+    for (y = 0; y < h; y++)
+    {
+	const char *row = xpm[1 + ncolors + y];
+
+	for (x = 0; x < w; x++)
+	    memcpy(pixels + ((size_t)y * w + x) * 4,
+			     palette[(unsigned char)row[x]], 4);
+    }
+
+    image = IupImageRGBA(w, h, pixels);
+    vim_free(pixels);
+    return image;
+}
+
     int
 gui_mch_open(void)
 {
@@ -1102,6 +1171,15 @@ gui_mch_open(void)
 #endif
     IupSetStrf(giup.dialog, "RESIZEINC", "%dx%d",
 					   gui.char_width, gui.char_height);
+
+    if (vim_strchr(p_go, GO_ICON) != NULL)
+    {
+#include "../runtime/vim48x48.xpm"
+	Ihandle *icon;
+
+	if ((icon = iup_xpm_image(vim48x48)) != NULL)
+	    IupSetAttributeHandle(giup.dialog, "ICON", icon);
+    }
 
     if (gui_win_x != -1 && gui_win_y != -1)
 	IupShowXY(giup.dialog, gui_win_x, gui_win_y);
@@ -2052,74 +2130,6 @@ static const char *toolbar_stock_names[] =
     "applications-development", "go-jump", NULL, NULL, NULL,
     NULL
 };
-
-    static int
-iup_xpm_color(const char *line, int cpp, unsigned char *rgba)
-{
-    const char	*p = line + cpp;
-    int		r, g, b;
-
-    while (*p != NUL)
-    {
-	while (*p == ' ' || *p == '\t')
-	    p++;
-	if (p[0] == 'c' && (p[1] == ' ' || p[1] == '\t'))
-	{
-	    p++;
-	    while (*p == ' ' || *p == '\t')
-		p++;
-	    if (*p == '#' && sscanf(p + 1, "%2x%2x%2x", &r, &g, &b) == 3)
-	    {
-		rgba[0] = (unsigned char)r;
-		rgba[1] = (unsigned char)g;
-		rgba[2] = (unsigned char)b;
-		rgba[3] = 255;
-	    }
-	    else
-		rgba[0] = rgba[1] = rgba[2] = rgba[3] = 0;
-	    return OK;
-	}
-	while (*p != NUL && *p != ' ' && *p != '\t')
-	    p++;
-    }
-    return FAIL;
-}
-
-    static Ihandle *
-iup_xpm_image(char **xpm)
-{
-    unsigned char   palette[256][4];
-    unsigned char   *pixels;
-    Ihandle	    *image;
-    int		    w, h, ncolors, cpp, i, x, y;
-
-    if (xpm == NULL || sscanf(xpm[0], "%d %d %d %d", &w, &h, &ncolors, &cpp)
-									 != 4)
-	return NULL;
-    if (cpp != 1 || w <= 0 || h <= 0 || ncolors <= 0)
-	return NULL;
-
-    memset(palette, 0, sizeof(palette));
-    for (i = 0; i < ncolors; i++)
-	iup_xpm_color(xpm[1 + i], cpp, palette[(unsigned char)xpm[1 + i][0]]);
-
-    pixels = alloc((size_t)w * h * 4);
-    if (pixels == NULL)
-	return NULL;
-
-    for (y = 0; y < h; y++)
-    {
-	const char *row = xpm[1 + ncolors + y];
-
-	for (x = 0; x < w; x++)
-	    memcpy(pixels + ((size_t)y * w + x) * 4,
-			     palette[(unsigned char)row[x]], 4);
-    }
-
-    image = IupImageRGBA(w, h, pixels);
-    vim_free(pixels);
-    return image;
-}
 
     static Ihandle *
 iup_builtin_image(int iconidx)
