@@ -88,6 +88,8 @@ static struct
 } giup;
 
 static Ihandle *iup_clipboard = NULL;
+static char_u *iup_sel_text[2] = {NULL, NULL};
+static void iup_clip_check_owned(void);
 
 #define BLINK_NONE  0
 #define BLINK_ON    1
@@ -406,6 +408,10 @@ iup_dialog_close_cb(Ihandle *ih UNUSED)
 iup_canvas_focus_cb(Ihandle *ih UNUSED, int focus)
 {
     gui_focus_change(focus);
+#ifdef FEAT_CLIPBOARD
+    if (focus)
+	iup_clip_check_owned();
+#endif
     return IUP_DEFAULT;
 }
 
@@ -2869,12 +2875,40 @@ iup_get_clipboard(Clipboard_T *cbd)
     int
 clip_mch_own_selection(Clipboard_T *cbd UNUSED)
 {
-    return FAIL;
+    return OK;
 }
 
     void
-clip_mch_lose_selection(Clipboard_T *cbd UNUSED)
+clip_mch_lose_selection(Clipboard_T *cbd)
 {
+    VIM_CLEAR(iup_sel_text[cbd == &clip_plus]);
+}
+
+/*
+ * IUP has no selection ownership events, so check whether the text we put in
+ * the selection is still there and drop the ownership when it is not.
+ */
+    static void
+iup_clip_check_owned(void)
+{
+    Clipboard_T	*cbds[2];
+    int		i;
+
+    cbds[0] = &clip_star;
+    cbds[1] = &clip_plus;
+
+    for (i = 0; i < 2; ++i)
+    {
+	Clipboard_T *cbd = cbds[i];
+	char	    *text;
+
+	if (!cbd->owned || iup_sel_text[i] == NULL)
+	    continue;
+
+	text = IupGetAttribute(iup_get_clipboard(cbd), "TEXT");
+	if (text == NULL || STRCMP(text, iup_sel_text[i]) != 0)
+	    clip_lose_selection(cbd);
+    }
 }
 
     void
@@ -2927,11 +2961,12 @@ clip_mch_set_selection(Clipboard_T *cbd)
     char_u	*text;
     long_u	count;
     int		type;
+    int		was_owned = cbd->owned;
 
     // If the '*' register isn't already filled in, fill it in now.
     cbd->owned = TRUE;
     clip_get_selection(cbd);
-    cbd->owned = FALSE;
+    cbd->owned = was_owned;
 
     type = clip_convert_selection(&str, &count, cbd);
     if (type < 0)
@@ -2957,7 +2992,8 @@ clip_mch_set_selection(Clipboard_T *cbd)
 	text[count] = NUL;
 	clip = iup_get_clipboard(cbd);
 	IupSetAttribute(clip, "TEXT", (char *)text);
-	vim_free(text);
+	vim_free(iup_sel_text[cbd == &clip_plus]);
+	iup_sel_text[cbd == &clip_plus] = text;
     }
 
     vim_free(str);
