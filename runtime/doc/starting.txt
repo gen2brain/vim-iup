@@ -1,4 +1,4 @@
-*starting.txt*	For Vim version 9.2.  Last change: 2026 Sep 08
+*starting.txt*	For Vim version 9.2.  Last change: 2026 Oct 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1290,6 +1290,13 @@ output of ":version"), steps 2, 3 and 4 are skipped, and the compiled-in
 default is used after step 5.  This means that the compiled-in default
 overrules the value of $VIM.  This is useful if $VIM is "/etc" and the runtime
 files are in "/usr/share/vim/vim82".
+
+For macOS the GUI looks next to the executable before the compiled-in default
+is used: when $VIMRUNTIME is not set, "../Resources/vim/runtime",
+"../runtime" and "../share/vim/vim{version}" are tried in that order and the
+first one that contains "defaults.vim" is used, with $VIM set to its parent
+directory.  This finds the runtime files in an application bundle, in the
+build directory and in a relocated installation.
 
 Once Vim has done this once, it will set the $VIMRUNTIME environment variable.
 To change it later, use a ":let" command like this: >

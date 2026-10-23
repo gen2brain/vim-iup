@@ -46,6 +46,11 @@
 #include <iupdraw.h>
 #include <iupkey.h>
 
+#ifdef MACOS_X
+# include <mach-o/dyld.h>
+# include "version.h"
+#endif
+
 static struct
 {
     Ihandle	*dialog;
@@ -1001,9 +1006,94 @@ gui_mch_flush(void)
 {
 }
 
+#ifdef MACOS_X
+static char *iup_runtime_rel[] = {
+    "../Resources/vim/runtime",
+    "../runtime",
+    "../share/vim/" VIM_VERSION_NODOT,
+    NULL
+};
+
+    static void
+iup_set_runtime_env(void)
+{
+    char_u	*env;
+    char_u	*tail;
+    char	exe[MAXPATHL];
+    char	path[MAXPATHL];
+    char	full[MAXPATHL];
+    char	**rel;
+    uint32_t	len = MAXPATHL;
+# ifdef HAVE_READLINK
+    int		limit;
+    ssize_t	n;
+# endif
+
+    env = mch_getenv((char_u *)"VIMRUNTIME");
+    if (env != NULL && *env != NUL)
+	return;
+
+    if (_NSGetExecutablePath(exe, &len) != 0)
+	return;
+
+# ifdef HAVE_READLINK
+    for (limit = 10; limit > 0; --limit)
+    {
+	n = readlink(exe, path, MAXPATHL - 1);
+	if (n <= 0)
+	    break;
+	path[n] = NUL;
+	if (vim_ispathsep(path[0]))
+	    vim_snprintf(exe, MAXPATHL, "%s", path);
+	else
+	{
+	    tail = gettail((char_u *)exe);
+	    vim_snprintf((char *)tail,
+			MAXPATHL - (tail - (char_u *)exe), "%s", path);
+	}
+    }
+# endif
+
+    tail = gettail((char_u *)exe);
+    if (tail == (char_u *)exe)
+	return;
+    *tail = NUL;
+
+    for (rel = iup_runtime_rel; *rel != NULL; ++rel)
+    {
+	vim_snprintf(path, MAXPATHL, "%s%s/defaults.vim", exe, *rel);
+	if (mch_getperm((char_u *)path) < 0)
+	    continue;
+
+	vim_snprintf(path, MAXPATHL, "%s%s", exe, *rel);
+	if (vim_FullName((char_u *)path, (char_u *)full, MAXPATHL, TRUE)
+								       == FAIL)
+	    break;
+	vim_setenv((char_u *)"VIMRUNTIME", (char_u *)full);
+
+	env = mch_getenv((char_u *)"VIM");
+	if (env == NULL || *env == NUL)
+	{
+	    tail = gettail((char_u *)full);
+	    if (tail > (char_u *)full + 1)
+	    {
+		if (after_pathsep((char_u *)full, tail))
+		    --tail;
+		*tail = NUL;
+		vim_setenv((char_u *)"VIM", (char_u *)full);
+	    }
+	}
+	break;
+    }
+}
+#endif
+
     void
 gui_mch_prepare(int *argc UNUSED, char **argv UNUSED)
 {
+#ifdef MACOS_X
+    iup_set_runtime_env();
+#endif
 }
 
     int
