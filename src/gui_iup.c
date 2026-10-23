@@ -1692,8 +1692,12 @@ gui_mch_draw_string(int row, int col, char_u *s, int len, int flags)
 	static const int	val[8] = {1, 0, 0, 0, 1, 2, 2, 2};
 
 	iup_set_draw_color(giup.sp);
-	for (x = FILL_X(col); x < FILL_X(col + cells); ++x)
-	    IupDrawPixel(giup.canvas, x, y - val[x % 8]);
+	IupSetAttribute(giup.canvas, "DRAWSTYLE", "STROKE");
+	IupDrawPathBegin(giup.canvas);
+	IupDrawPathMoveToF(giup.canvas, FILL_X(col) + 1, y - 2 + 0.5);
+	for (x = FILL_X(col) + 1; x < FILL_X(col + cells); ++x)
+	    IupDrawPathLineToF(giup.canvas, x, y - val[x % 8] + 0.5);
+	IupDrawPathStroke(giup.canvas);
     }
 }
 
