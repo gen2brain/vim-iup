@@ -10553,6 +10553,10 @@ printf "%s\n" "yes - automatic GUI support" >&6; } ;;
 printf "%s\n" "auto - automatic GUI support" >&6; } ;;
     haiku)  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: Haiku GUI support" >&5
 printf "%s\n" "Haiku GUI support" >&6; } ;;
+    iup)    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: IUP GUI support" >&5
+printf "%s\n" "IUP GUI support" >&6; }
+            SKIP_IUP=
+            SKIP_HAIKU=YES ;;
     *)      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: Sorry, $enable_gui GUI is not supported" >&5
 printf "%s\n" "Sorry, $enable_gui GUI is not supported" >&6; }
             SKIP_HAIKU=YES ;;

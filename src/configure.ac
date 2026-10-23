@@ -2692,6 +2692,9 @@ if test "x$HAIKU" = "xyes"; then
     yes|"") AC_MSG_RESULT(yes - automatic GUI support) ;;
     auto)   AC_MSG_RESULT(auto - automatic GUI support) ;;
     haiku)  AC_MSG_RESULT(Haiku GUI support) ;;
+    iup)    AC_MSG_RESULT(IUP GUI support)
+            SKIP_IUP=
+            SKIP_HAIKU=YES ;;
     *)      AC_MSG_RESULT([Sorry, $enable_gui GUI is not supported])
             SKIP_HAIKU=YES ;;
     esac
