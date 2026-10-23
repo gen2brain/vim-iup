@@ -1682,6 +1682,7 @@ iup_update_font_metrics(void)
 	    giup.font_bold ? "Bold " : "",
 	    giup.font_italic ? "Italic " : "",
 	    giup.font_size);
+    IupSetAttribute(giup.canvas, "DRAWFONT", NULL);
     IupDrawGetTextSize(giup.canvas, "AAAAAAAAAAAAAAAA", 16, &w, &h);
     IupDrawGetTextMetrics(giup.canvas, &ascent, &descent, &line_height);
 
