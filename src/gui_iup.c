@@ -1093,6 +1093,7 @@ gui_mch_prepare(int *argc UNUSED, char **argv UNUSED)
 {
 #ifdef MACOS_X
     iup_set_runtime_env();
+    gui.dofork = false;
 #endif
 }
 

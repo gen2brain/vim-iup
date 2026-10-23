@@ -55,6 +55,10 @@ When using "vim -f" and then ":gui", Vim will run in the foreground.  The
 
 When there are running jobs Vim will not fork, because the processes would no
 longer be child processes.
+
+On macOS the GUI never forks: a process that has initialized Cocoa cannot be
+forked, its XPC connections do not survive and the GUI then spins at 100% CPU.
+Start gvim with "&" to get the shell back.
 								*E851* *E852*
 When starting the GUI fails Vim will try to continue running in the terminal.
 
