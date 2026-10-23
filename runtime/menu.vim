@@ -272,6 +272,7 @@ an <silent> 20.440.310 &Edit.&Global\ Settings.Toggle\ &Toolbar		:call <SID>Togg
 an <silent> 20.440.320 &Edit.&Global\ Settings.Toggle\ &Bottom\ Scrollbar :call <SID>ToggleGuiOption("b")<CR>
 an <silent> 20.440.330 &Edit.&Global\ Settings.Toggle\ &Left\ Scrollbar	:call <SID>ToggleGuiOption("l")<CR>
 an <silent> 20.440.340 &Edit.&Global\ Settings.Toggle\ &Right\ Scrollbar :call <SID>ToggleGuiOption("r")<CR>
+an <silent> 20.440.350 &Edit.&Global\ Settings.Toggle\ &Dark\ Theme	:call <SID>ToggleGuiOption("d")<CR>
 
 def s:SearchP()
   if !exists("g:menutrans_path_dialog")

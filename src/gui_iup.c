@@ -1079,6 +1079,14 @@ gui_mch_new_colors(void)
     iup_invalidate_all();
 }
 
+#if defined(FEAT_GUI_DARKTHEME) || defined(PROTO)
+    void
+gui_mch_set_dark_theme(int dark)
+{
+    IupSetGlobal("APPEARANCE", dark ? "DARK" : "SYSTEM");
+}
+#endif
+
 #ifdef FEAT_MENU
     static void
 iup_map_menu_tree(vimmenu_T *menu)

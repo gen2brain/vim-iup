@@ -6,6 +6,7 @@ void gui_mch_prepare(int *argc, char **argv);
 int gui_mch_init_check(void);
 int gui_mch_init(void);
 void gui_mch_new_colors(void);
+void gui_mch_set_dark_theme(int dark);
 int gui_mch_open(void);
 void gui_mch_exit(int rc);
 #if !defined(MSWIN) || defined(PROTO)
