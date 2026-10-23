@@ -1999,4 +1999,79 @@ func Test_tabnew_tabclose_size_stable()
   call delete('Xtest_tabsize')
 endfunc
 
+" Basic editing and window operations in the IUP GUI.  Every crash this port has
+" had killed gvim before it could write the file, so a missing result is a
+" failure as much as a wrong value.
+func Test_iup_basic_operations()
+  CheckCanRunGui
+  CheckFeature gui_iup
+
+  let after =<< trim [CODE]
+    let result = []
+
+    set lines=25 columns=80
+    sleep 200m
+    call add(result, &lines .. 'x' .. &columns)
+
+    call setline(1, ['alpha', 'beta', 'gamma'])
+    let &undolevels = &undolevels
+    normal! Gdd
+    call add(result, string(line('$')))
+    normal! u
+    call add(result, string(line('$')))
+    call add(result, string(search('beta', 'nw')))
+
+    tabnew
+    tabnew
+    sleep 200m
+    tabfirst
+    sleep 200m
+    call add(result, string(tabpagenr('$')))
+    tabonly!
+    sleep 200m
+    call add(result, string(tabpagenr('$')))
+    call add(result, &lines .. 'x' .. &columns)
+
+    split
+    vsplit
+    call add(result, string(winnr('$')))
+    only!
+    call add(result, string(winnr('$')))
+
+    let s:font = &guifont
+    let &guifont = s:font
+    sleep 200m
+    call add(result, &lines .. 'x' .. &columns)
+
+    normal! gg
+    normal! G
+    redraw!
+    call add(result, string(line('.')))
+
+    call system('echo iup')
+    call add(result, string(v:shell_error))
+
+    call writefile(result, 'Xtest_iup_basic')
+    qall!
+  [CODE]
+
+  if RunVim([], after, '-f -g')
+    let r = readfile('Xtest_iup_basic')
+    call assert_equal('25x80', r[0], 'lines and columns after :set')
+    call assert_equal('2', r[1], 'a line was deleted')
+    call assert_equal('3', r[2], 'undo brought the line back')
+    call assert_equal('2', r[3], 'search found the second line')
+    call assert_equal('3', r[4], 'three tab pages')
+    call assert_equal('1', r[5], 'one tab page after :tabonly')
+    call assert_equal('25x80', r[6], 'size unchanged by the tab line')
+    call assert_equal('3', r[7], 'three windows after the splits')
+    call assert_equal('1', r[8], 'one window after :only')
+    call assert_equal('25x80', r[9], 'size unchanged by reloading the font')
+    call assert_equal('3', r[10], 'cursor moved to the last line')
+    call assert_equal('0', r[11], 'the shell command succeeded')
+  endif
+
+  call delete('Xtest_iup_basic')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
