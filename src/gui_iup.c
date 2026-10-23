@@ -2365,8 +2365,63 @@ iup_dialog_key_cb(Ihandle *ih UNUSED, int c)
     return IUP_CLOSE;
 }
 
+    static char *
+iup_dialog_buttons(char_u *buttons)
+{
+    if (STRCMP(buttons, (char_u *)_("&Yes\n&No\n&Cancel")) == 0
+	    || STRCMP(buttons, (char_u *)"&Yes\n&No\n&Cancel") == 0)
+	return "YESNOCANCEL";
+    if (STRCMP(buttons, (char_u *)_("&Yes\n&No")) == 0
+	    || STRCMP(buttons, (char_u *)"&Yes\n&No") == 0)
+	return "YESNO";
+    if (STRCMP(buttons, (char_u *)_("&OK\n&Cancel")) == 0
+	    || STRCMP(buttons, (char_u *)"&OK\n&Cancel") == 0)
+	return "OKCANCEL";
+    if (STRCMP(buttons, (char_u *)_("&Ok")) == 0
+	    || STRCMP(buttons, (char_u *)"&Ok") == 0)
+	return "OK";
+    return NULL;
+}
+
+    static char *
+iup_dialog_type(int type)
+{
+    switch (type)
+    {
+	case VIM_ERROR:	    return "ERROR";
+	case VIM_WARNING:   return "WARNING";
+	case VIM_INFO:	    return "INFORMATION";
+	case VIM_QUESTION:  return "QUESTION";
+    }
+    return "MESSAGE";
+}
+
+    static int
+iup_message_dialog(int type, char_u *title, char_u *message, char *buttons,
+							       int dfltbutton)
+{
+    Ihandle	*dlg = IupMessageDlg();
+    int		response;
+
+    IupSetAttribute(dlg, "DIALOGTYPE", iup_dialog_type(type));
+    IupSetAttribute(dlg, "BUTTONS", buttons);
+    IupSetStrf(dlg, "TITLE", "%s", title != NULL ? (char *)title : "Vim");
+    IupSetStrf(dlg, "VALUE", "%s", (char *)message);
+    IupSetAttributeHandle(dlg, "PARENTDIALOG", giup.dialog);
+    if (dfltbutton == 2 && STRCMP(buttons, "OK") != 0)
+	IupSetInt(dlg, "BUTTONDEFAULT", 2);
+    else if (dfltbutton == 3 && STRCMP(buttons, "YESNOCANCEL") == 0)
+	IupSetInt(dlg, "BUTTONDEFAULT", 3);
+
+    IupPopup(dlg, IUP_CENTERPARENT, IUP_CENTERPARENT);
+    response = IupGetInt(dlg, "BUTTONRESPONSE");
+    IupDestroy(dlg);
+
+    return response;
+}
+
     int
-gui_mch_dialog(int type UNUSED, char_u *title, char_u *message,
+gui_mch_dialog(int type, char_u *title, char_u *message,
 	char_u *buttons, int dfltbutton, char_u *textfield, int ex_cmd UNUSED)
 {
     iup_push_updates();
@@ -2379,6 +2434,15 @@ gui_mch_dialog(int type UNUSED, char_u *title, char_u *message,
     char_u	*p;
     char_u	*q;
     int		idx = 0;
+
+    if (textfield == NULL)
+    {
+	char *std_buttons = iup_dialog_buttons(buttons);
+
+	if (std_buttons != NULL)
+	    return iup_message_dialog(type, title, message, std_buttons,
+								  dfltbutton);
+    }
 
     copy = vim_strsave(buttons);
     if (copy == NULL)
