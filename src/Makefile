@@ -2138,7 +2138,7 @@ nvcmdidxs: auto/config.mk nv_cmds.h
 
 # The normal command to compile a .c file to its .o file.
 # Without or with ALL_CFLAGS.
-CCC_NF = $(CC) -c -I$(srcdir)
+CCC_NF = $(CC) -c -iquote$(srcdir)
 CCC = $(CCC_NF) $(ALL_CFLAGS)
 
 
