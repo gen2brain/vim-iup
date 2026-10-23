@@ -818,7 +818,10 @@ iup_place_formbox(Ihandle *parent)
 iup_tabline_change_cb(Ihandle *ih UNUSED, int new_pos, int old_pos UNUSED)
 {
     if (!giup.ignore_tabline)
+    {
+	iup_place_formbox(iup_tabline_page(new_pos));
 	send_tabline_event(new_pos + 1);
+    }
     return IUP_DEFAULT;
 }
 
