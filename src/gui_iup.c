@@ -1061,6 +1061,7 @@ gui_mch_init(void)
 #ifdef FEAT_MENU
     giup.menubar = IupMenu(NULL);
     IupSetAttributeHandle(giup.dialog, "MENU", giup.menubar);
+    IupSetAttribute(giup.dialog, "MENUBARKEY", "NO");
 #endif
     IupSetCallback(giup.dialog, "CLOSE_CB", (Icallback)iup_dialog_close_cb);
     IupSetCallback(giup.dialog, "RESIZE_CB", (Icallback)iup_canvas_resize_cb);
