@@ -182,12 +182,14 @@ static struct
     static void
 iup_set_draw_color(guicolor_T color)
 {
+    guicolor_T	rgb = gui_mch_get_rgb(color);
+
     if (giup.flash)
-	color ^= 0xFFFFFF;
+	rgb ^= 0xFFFFFF;
     IupSetStrf(giup.canvas, "DRAWCOLOR", "%d %d %d",
-	    (int)((color >> 16) & 0xFF),
-	    (int)((color >> 8) & 0xFF),
-	    (int)(color & 0xFF));
+	    (int)((rgb >> 16) & 0xFF),
+	    (int)((rgb >> 8) & 0xFF),
+	    (int)(rgb & 0xFF));
 }
 
     static void
@@ -1564,7 +1566,12 @@ gui_mch_get_rgb_color(int r, int g, int b)
     guicolor_T
 gui_mch_get_rgb(guicolor_T pixel)
 {
+#ifdef MSWIN
+    return (guicolor_T)((GetRValue(pixel) << 16) + (GetGValue(pixel) << 8)
+							   + GetBValue(pixel));
+#else
     return pixel & 0xFFFFFF;
+#endif
 }
 
     void
