@@ -7,6 +7,9 @@ int gui_mch_init_check(void);
 int gui_mch_init(void);
 void gui_mch_new_colors(void);
 void gui_mch_set_dark_theme(int dark);
+#if defined(MSWIN) || defined(PROTO)
+void server_add_input(char_u *str);
+#endif
 int gui_mch_open(void);
 void gui_mch_exit(int rc);
 #if !defined(MSWIN) || defined(PROTO)

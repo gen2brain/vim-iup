@@ -88,8 +88,10 @@ static struct
 } giup;
 
 static Ihandle *iup_clipboard = NULL;
+#if defined(FEAT_CLIPBOARD) && !defined(MACOS_X) && !defined(MSWIN)
 static char_u *iup_sel_text[2] = {NULL, NULL};
 static void iup_clip_check_owned(void);
+#endif
 
 #define BLINK_NONE  0
 #define BLINK_ON    1
@@ -408,7 +410,7 @@ iup_dialog_close_cb(Ihandle *ih UNUSED)
 iup_canvas_focus_cb(Ihandle *ih UNUSED, int focus)
 {
     gui_focus_change(focus);
-#ifdef FEAT_CLIPBOARD
+#if defined(FEAT_CLIPBOARD) && !defined(MACOS_X) && !defined(MSWIN)
     if (focus)
 	iup_clip_check_owned();
 #endif
@@ -883,11 +885,47 @@ gui_mch_update(void)
 	IupFlush();
 }
 
+#if defined(MSWIN) && defined(FEAT_CLIENTSERVER)
+static garray_T	iup_server_ga = {0, 0, 0, 0, NULL};
+
+    void
+server_add_input(char_u *str)
+{
+    if (iup_server_ga.ga_data == NULL)
+	ga_init2(&iup_server_ga, 1, 200);
+    ga_concat(&iup_server_ga, str);
+}
+
+    static void
+iup_server_flush_input(void)
+{
+    char_u  *str;
+
+    if (iup_server_ga.ga_len == 0 || typebuf.tb_len != 0)
+	return;
+    str = vim_strnsave(iup_server_ga.ga_data, iup_server_ga.ga_len);
+    iup_server_ga.ga_len = 0;
+    if (str != NULL)
+    {
+	server_to_input_buf(str);
+	vim_free(str);
+    }
+}
+#endif
+
+    static int
+iup_wait_done(int result)
+{
+    IupSetAttribute(giup.wait_timer, "RUN", "NO");
+    return result;
+}
+
     int
 gui_mch_wait_for_chars(long wtime)
 {
     int		focus;
     long	remaining = wtime;
+    int		armed = FALSE;
 #ifdef ELAPSED_FUNC
     elapsed_T	start_tv;
 
@@ -895,6 +933,7 @@ gui_mch_wait_for_chars(long wtime)
 #endif
 
     focus = gui.in_focus;
+    giup.timed_out = FALSE;
     for (;;)
     {
 	long	timeout = remaining;
@@ -915,10 +954,13 @@ gui_mch_wait_for_chars(long wtime)
 	did_add_timer = FALSE;
 # endif
 	parse_queued_messages();
+# if defined(MSWIN) && defined(FEAT_CLIENTSERVER)
+	iup_server_flush_input();
+# endif
 # ifdef FEAT_TIMERS
 	if (did_add_timer)
 	    // Need to recompute the waiting time.
-	    return FAIL;
+	    return iup_wait_done(FAIL);
 # endif
 # ifdef FEAT_JOB_CHANNEL
 	if (has_any_channel() && (wtime < 0 || timeout > 20))
@@ -927,31 +969,28 @@ gui_mch_wait_for_chars(long wtime)
 #endif
 
 	if (input_available())
-	    return OK;
+	    return iup_wait_done(OK);
 
-	giup.timed_out = FALSE;
-	if (timeout >= 0)
+	if (timeout >= 0 && !armed)
 	{
 	    IupSetInt(giup.wait_timer, "TIME", timeout > 0 ? (int)timeout : 1);
 	    IupSetAttribute(giup.wait_timer, "RUN", "YES");
+	    armed = TRUE;
 	}
 
 	IupLoopStepWait();
 
-	if (timeout >= 0)
-	    IupSetAttribute(giup.wait_timer, "RUN", "NO");
-
 	if (input_available())
-	    return OK;
+	    return iup_wait_done(OK);
 
 	if (wtime >= 0)
 	{
 	    if (giup.timed_out)
-		return FAIL;
+		return iup_wait_done(FAIL);
 #ifdef ELAPSED_FUNC
 	    remaining = wtime - ELAPSED_FUNC(start_tv);
 	    if (remaining <= 0)
-		return FAIL;
+		return iup_wait_done(FAIL);
 #endif
 	}
     }
