@@ -4645,6 +4645,27 @@ objects/gui_haiku.o: auto/osdef.h gui_haiku.cc vim.h protodef.h auto/config.h fe
  structs.h regexp.h gui.h libvterm/include/vterm.h \
  libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
  globals.h errors.h version.h
+objects/gui_iup.o: auto/osdef.h gui_iup.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h image.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h xdiff/xdiff.h \
+ xdiff/../vim.h alloc.h ex_cmds.h spell.h proto.h globals.h errors.h \
+ ../runtime/vim48x48.xpm gui_x11_pm.h ../pixmaps/tb_new.xpm \
+ ../pixmaps/tb_open.xpm ../pixmaps/tb_close.xpm ../pixmaps/tb_save.xpm \
+ ../pixmaps/tb_print.xpm ../pixmaps/tb_cut.xpm ../pixmaps/tb_copy.xpm \
+ ../pixmaps/tb_paste.xpm ../pixmaps/tb_find.xpm \
+ ../pixmaps/tb_find_next.xpm ../pixmaps/tb_find_prev.xpm \
+ ../pixmaps/tb_find_help.xpm ../pixmaps/tb_exit.xpm \
+ ../pixmaps/tb_undo.xpm ../pixmaps/tb_redo.xpm ../pixmaps/tb_help.xpm \
+ ../pixmaps/tb_macro.xpm ../pixmaps/tb_make.xpm \
+ ../pixmaps/tb_save_all.xpm ../pixmaps/tb_jump.xpm \
+ ../pixmaps/tb_ctags.xpm ../pixmaps/tb_load_session.xpm \
+ ../pixmaps/tb_save_session.xpm ../pixmaps/tb_new_session.xpm \
+ ../pixmaps/tb_blank.xpm ../pixmaps/tb_maximize.xpm \
+ ../pixmaps/tb_split.xpm ../pixmaps/tb_minimize.xpm \
+ ../pixmaps/tb_shell.xpm ../pixmaps/tb_replace.xpm \
+ ../pixmaps/tb_vsplit.xpm ../pixmaps/tb_maxwidth.xpm \
+ ../pixmaps/tb_minwidth.xpm
 objects/json_test.o: auto/osdef.h json_test.c main.c vim.h protodef.h auto/config.h feature.h \
  os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
  beval.h structs.h regexp.h gui.h \
