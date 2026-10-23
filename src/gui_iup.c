@@ -2355,6 +2355,16 @@ iup_dialog_button_cb(Ihandle *ih)
     return IUP_CLOSE;
 }
 
+    static int
+iup_dialog_key_cb(Ihandle *ih UNUSED, int c)
+{
+    if (c != K_ESC)
+	return IUP_DEFAULT;
+
+    iup_dialog_button = 0;
+    return IUP_CLOSE;
+}
+
     int
 gui_mch_dialog(int type UNUSED, char_u *title, char_u *message,
 	char_u *buttons, int dfltbutton, char_u *textfield, int ex_cmd UNUSED)
@@ -2384,14 +2394,14 @@ gui_mch_dialog(int type UNUSED, char_u *title, char_u *message,
 	int	len = 0;
 
 	for (q = p; *q != NUL && *q != DLG_BUTTON_SEP; ++q)
-	    if (*q != DLG_HOTKEY_CHAR && len < (int)sizeof(label) - 1)
+	    if (len < (int)sizeof(label) - 1)
 		label[len++] = *q;
 	label[len] = NUL;
 
 	btn = IupButton(label);
 	IupSetInt(btn, "_VIM_IDX", ++idx);
 	IupSetCallback(btn, "ACTION", (Icallback)iup_dialog_button_cb);
-	IupSetAttribute(btn, "PADDING", "12x2");
+	IupSetAttribute(btn, "PADDING", "16x6");
 	IupAppend(hbox, btn);
 	if (idx == dfltbutton)
 	    defbtn = btn;
@@ -2422,8 +2432,12 @@ gui_mch_dialog(int type UNUSED, char_u *title, char_u *message,
     IupSetStrf(dlg, "TITLE", "%s", title != NULL ? (char *)title : "Vim");
     IupSetAttribute(dlg, "DIALOGFRAME", "YES");
     IupSetAttributeHandle(dlg, "PARENTDIALOG", giup.dialog);
+    IupSetCallback(dlg, "K_ANY", (Icallback)iup_dialog_key_cb);
     if (defbtn != NULL)
+    {
 	IupSetAttributeHandle(dlg, "DEFAULTENTER", defbtn);
+	IupSetAttributeHandle(dlg, "STARTFOCUS", defbtn);
+    }
 
     iup_dialog_button = 0;
     IupPopup(dlg, IUP_CENTERPARENT, IUP_CENTERPARENT);
