@@ -101,4 +101,6 @@ void gui_mch_drawsign(int row, int col, int typenr);
 void *gui_mch_register_sign(char_u *signfile);
 void gui_mch_destroy_sign(void *sign);
 char_u *gui_mch_font_dialog(char_u *oldval);
+void *gui_mch_add_channel_watch(int fd, void (*readfn)(int));
+void gui_mch_remove_channel_watch(void *handle);
 /* vim: set ft=c : */

@@ -2764,6 +2764,9 @@ typedef struct {
 #ifdef FEAT_GUI_GTK
     gint	ch_inputHandler; // Cookie for input
 #endif
+#ifdef FEAT_GUI_IUP
+    void	*ch_inputHandler; // IupFdWatch element
+#endif
 
     ch_mode_T	ch_mode;
     job_io_T	ch_io;

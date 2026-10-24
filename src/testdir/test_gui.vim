@@ -2074,4 +2074,40 @@ func Test_iup_basic_operations()
   call delete('Xtest_iup_basic')
 endfunc
 
+" Job output in the IUP GUI.  The channel descriptor has to be registered with
+" the main loop, or the output callback is never invoked.
+func Test_iup_channel_callback()
+  CheckCanRunGui
+  CheckFeature gui_iup
+  CheckFeature job
+
+  let after =<< trim [CODE]
+    let result = []
+    let g:out = []
+
+    func! JobOut(ch, msg)
+      call add(g:out, a:msg)
+    endfunc
+
+    let opts = {'out_cb': 'JobOut'}
+    let g:job = job_start([&shell, &shellcmdflag, 'echo hello-from-job'], opts)
+    let i = 0
+    while empty(g:out) && i < 100
+      sleep 50m
+      let i += 1
+    endwhile
+    call add(result, empty(g:out) ? 'MISSING' : g:out[0])
+
+    call writefile(result, 'Xtest_iup_channel')
+    qall!
+  [CODE]
+
+  if RunVim([], after, '-f -g')
+    let r = readfile('Xtest_iup_channel')
+    call assert_equal('hello-from-job', r[0], 'the job output callback was invoked')
+  endif
+
+  call delete('Xtest_iup_channel')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

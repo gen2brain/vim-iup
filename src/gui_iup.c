@@ -920,6 +920,55 @@ iup_server_flush_input(void)
 }
 #endif
 
+#ifdef FEAT_JOB_CHANNEL
+static void (*iup_channel_read_fn)(int fd) = NULL;
+static int iup_channel_watch_failed = FALSE;
+
+    static int
+iup_channel_watch_cb(Ihandle *ih)
+{
+    if (iup_channel_read_fn != NULL)
+	iup_channel_read_fn(IupGetInt(ih, "FD"));
+    return IUP_DEFAULT;
+}
+
+    void *
+gui_mch_add_channel_watch(int fd, void (*readfn)(int))
+{
+    Ihandle *watch;
+
+    iup_channel_read_fn = readfn;
+
+    watch = IupFdWatch();
+    if (watch == NULL)
+    {
+	iup_channel_watch_failed = TRUE;
+	return NULL;
+    }
+
+    IupSetInt(watch, "FD", fd);
+    IupSetAttribute(watch, "MODE", "READ");
+    IupSetCallback(watch, "ACTION_CB", (Icallback)iup_channel_watch_cb);
+    IupSetAttribute(watch, "RUN", "YES");
+
+    if (!IupGetInt(watch, "RUN"))
+    {
+	IupDestroy(watch);
+	iup_channel_watch_failed = TRUE;
+	return NULL;
+    }
+
+    return (void *)watch;
+}
+
+    void
+gui_mch_remove_channel_watch(void *handle)
+{
+    if (handle != NULL)
+	IupDestroy((Ihandle *)handle);
+}
+#endif
+
     static int
 iup_wait_done(int result)
 {
@@ -970,7 +1019,8 @@ gui_mch_wait_for_chars(long wtime)
 	    return iup_wait_done(FAIL);
 # endif
 # ifdef FEAT_JOB_CHANNEL
-	if (has_any_channel() && (wtime < 0 || timeout > 20))
+	if (iup_channel_watch_failed && has_any_channel()
+					    && (wtime < 0 || timeout > 20))
 	    timeout = 20;
 # endif
 #endif

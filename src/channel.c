@@ -400,7 +400,7 @@ free_unused_channels(int copyID, int mask)
 
 #if defined(FEAT_GUI)
 
-# if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK)
+# if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_IUP)
 /*
  * Lookup the channel from the socket.  Set "partp" to the fd index.
  * Returns NULL when the socket isn't found.
@@ -529,6 +529,17 @@ channel_gui_register_one(channel_T *channel, ch_part_T part UNUSED)
 #   endif
     }
 #  endif
+#  ifdef FEAT_GUI_IUP
+    if (channel->ch_part[part].ch_inputHandler == NULL)
+    {
+	ch_log(channel, "Registering part %s with fd %d",
+		ch_part_names[part], channel->ch_part[part].ch_fd);
+
+	channel->ch_part[part].ch_inputHandler =
+	    gui_mch_add_channel_watch(channel->ch_part[part].ch_fd,
+							      channel_read_fd);
+    }
+#  endif
 # endif
 }
 
@@ -580,6 +591,14 @@ channel_gui_unregister_one(channel_T *channel UNUSED, ch_part_T part UNUSED)
 	gdk_input_remove(channel->ch_part[part].ch_inputHandler);
 #   endif
 	channel->ch_part[part].ch_inputHandler = 0;
+    }
+#  endif
+#  ifdef FEAT_GUI_IUP
+    if (channel->ch_part[part].ch_inputHandler != NULL)
+    {
+	ch_log(channel, "Unregistering part %s", ch_part_names[part]);
+	gui_mch_remove_channel_watch(channel->ch_part[part].ch_inputHandler);
+	channel->ch_part[part].ch_inputHandler = NULL;
     }
 #  endif
 # endif
