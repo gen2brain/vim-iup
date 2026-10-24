@@ -1392,69 +1392,13 @@ gui_mch_open(void)
 }
 
 #if !defined(MSWIN) || defined(PROTO)
-static char_u *iup_mono_fontlist = NULL;
-
-    static int
-iup_font_is_monospace(char_u *face)
-{
-    int	    advance_w = 0, advance_i = 0, h = 0;
-
-    IupSetStrf(giup.canvas, "DRAWFONT", "%s, %d", (char *)face, giup.font_size);
-    IupDrawGetTextSize(giup.canvas, "W", 1, &advance_w, &h);
-    IupDrawGetTextSize(giup.canvas, "i", 1, &advance_i, &h);
-    IupSetAttribute(giup.canvas, "DRAWFONT", NULL);
-
-    return advance_w > 0 && advance_w == advance_i;
-}
-
-    static char_u *
-iup_mono_fonts(char_u *list)
-{
-    garray_T	ga;
-    char_u	*p;
-
-    if (iup_mono_fontlist != NULL)
-	return iup_mono_fontlist;
-    if (giup.canvas == NULL)
-	return list;
-
-    ga_init2(&ga, 1, 400);
-    for (p = list; *p != NUL; )
-    {
-	char_u	*start = p;
-	char_u	*name;
-	int	len;
-
-	while (*p != NUL && *p != '\n')
-	    p++;
-	len = (int)(p - start);
-	if (*p == '\n')
-	    p++;
-	if (len == 0)
-	    continue;
-
-	name = vim_strnsave(start, len);
-	if (name == NULL)
-	    break;
-	if (iup_font_is_monospace(name))
-	{
-	    ga_concat(&ga, name);
-	    ga_append(&ga, '\n');
-	}
-	vim_free(name);
-    }
-    ga_append(&ga, NUL);
-
-    iup_mono_fontlist = ga.ga_data;
-    return iup_mono_fontlist;
-}
-
     void
 gui_mch_expand_font(optexpand_T *args, void *param,
 					    int (*add_match)(char_u *val))
 {
-    char_u  *list = (char_u *)IupGetGlobal("FONTLIST");
     int	    wide = *(int *)param;
+    char_u  *list = (char_u *)IupGetGlobal(wide ? "FONTLIST"
+						: "MONOSPACEFONTLIST");
     char_u  *p;
 
     if (args->oe_include_orig_val && *args->oe_opt_value == NUL && !wide)
@@ -1465,13 +1409,6 @@ gui_mch_expand_font(optexpand_T *args, void *param,
 
     if (list == NULL)
 	return;
-
-    if (!wide)
-    {
-	list = iup_mono_fonts(list);
-	if (list == NULL)
-	    return;
-    }
 
     for (p = list; *p != NUL; )
     {
@@ -1503,9 +1440,6 @@ gui_mch_expand_font(optexpand_T *args, void *param,
     void
 gui_mch_free_all(void)
 {
-#if !defined(MSWIN) || defined(PROTO)
-    VIM_CLEAR(iup_mono_fontlist);
-#endif
 #ifdef FEAT_BEVAL_GUI
     if (beval_timer != NULL)
     {
