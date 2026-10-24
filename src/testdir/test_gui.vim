@@ -656,10 +656,6 @@ func Test_expand_guifont()
     set guifont=Monospace\ 9
     call assert_equal('Monospace\ 9', getcompletion('set guifont=', 'cmdline')[0])
 
-    " Test auto-completion working for font names
-    call assert_equal(['Monospace'], getcompletion('set guifont=Mono*pace$', 'cmdline'))
-    call assert_equal(['Monospace'], getcompletion('set guifontwide=Mono*pace$', 'cmdline'))
-
     " Make sure non-monospace fonts are filtered out only in 'guifont'
     set guifont=
     let mono_fonts = getcompletion('set guifont=', 'cmdline')
@@ -667,6 +663,10 @@ func Test_expand_guifont()
     call assert_true(len(mono_fonts) > 1, 'monospace fonts were found')
     call assert_true(len(all_fonts) > len(mono_fonts),
           \ 'proportional fonts are offered only for guifontwide')
+
+    " A family offered for 'guifont' is also offered for 'guifontwide'
+    call assert_equal([mono_fonts[-1]],
+          \ getcompletion('set guifontwide=' .. mono_fonts[-1] .. '$', 'cmdline'))
 
     let &guifontwide = guifontwide_saved
     let &guifont     = guifont_saved
