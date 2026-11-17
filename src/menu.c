@@ -135,7 +135,7 @@ ex_menu(
     char_u	*arg;
     char_u	*p;
     int		i;
-#if defined(FEAT_GUI) && !defined(FEAT_GUI_GTK)
+#if defined(FEAT_GUI) && !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_IUP)
     int		old_menu_height;
 # if defined(FEAT_TOOLBAR) && !defined(FEAT_GUI_MSWIN)
     int		old_toolbar_height;
@@ -308,7 +308,7 @@ ex_menu(
 	semsg(_(e_trailing_characters_str), map_to);
 	goto theend;
     }
-#if defined(FEAT_GUI) && !(defined(FEAT_GUI_GTK) || defined(FEAT_GUI_PHOTON))
+#if defined(FEAT_GUI) && !(defined(FEAT_GUI_GTK) || defined(FEAT_GUI_IUP))
     old_menu_height = gui.menu_height;
 # if defined(FEAT_TOOLBAR) && !defined(FEAT_GUI_MSWIN)
     old_toolbar_height = gui.toolbar_height;
@@ -439,7 +439,7 @@ ex_menu(
 	vim_free(map_buf);
     }
 
-#if defined(FEAT_GUI) && !(defined(FEAT_GUI_GTK))
+#if defined(FEAT_GUI) && !(defined(FEAT_GUI_GTK) || defined(FEAT_GUI_IUP))
     // If the menubar height changed, resize the window
     if (gui.in_use
 	    && (gui.menu_height != old_menu_height
@@ -2140,7 +2140,8 @@ gui_update_menus(int modes)
 }
 
 # if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) \
-    || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_PHOTON)
+    || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_PHOTON) \
+    || defined(FEAT_GUI_IUP)
 /*
  * Check if a key is used as a mnemonic for a toplevel menu.
  * Case of the key is ignored.

@@ -2965,7 +2965,7 @@ init_mappings(void)
 #if defined(MSWIN) || defined(MACOS_X)
     int		i;
 
-# if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
+# if defined(MSWIN) && (!defined(FEAT_GUI) || defined(VIMDLL))
 #  ifdef VIMDLL
     if (!gui.starting)
 #  endif

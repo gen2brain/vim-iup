@@ -340,6 +340,9 @@ extern char_u *vimpty_getenv(const char_u *string);	// in misc2.c
 #  ifdef FEAT_GUI_PHOTON
 #   include "gui_photon.pro"
 #  endif
+#  ifdef FEAT_GUI_IUP
+#   include "gui_iup.pro"
+#  endif
 # endif	// FEAT_GUI
 
 # ifdef FEAT_OLE
@@ -367,7 +370,8 @@ extern char_u *vimpty_getenv(const char_u *string);	// in misc2.c
 # ifdef MACOS_X
 #  include "os_macosx.pro"
 # endif
-# if defined(MACOS_X_DARWIN) && defined(FEAT_CLIPBOARD) && !defined(FEAT_GUI)
+# if defined(MACOS_X_DARWIN) && defined(FEAT_CLIPBOARD) \
+	&& (!defined(FEAT_GUI) || defined(FEAT_GUI_IUP))
 // functions in os_macosx.m
 void clip_mch_lose_selection(Clipboard_T *cbd);
 int clip_mch_own_selection(Clipboard_T *cbd);

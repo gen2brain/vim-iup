@@ -43,7 +43,11 @@ typedef struct BalloonEvalStruct
     int			y;
     unsigned int	state;		// Button/Modifier key state
 # else
-#  if !defined(FEAT_GUI_MSWIN)
+#  ifdef FEAT_GUI_IUP
+    int			x;
+    int			y;
+    BeState		showState;	// tells us what's currently going on
+#  elif !defined(FEAT_GUI_MSWIN)
     Widget		target;		// widget we are monitoring
     Widget		balloonShell;
     Widget		balloonLabel;
@@ -63,7 +67,8 @@ typedef struct BalloonEvalStruct
     BeState		showState;	// tells us what's currently going on
 #  endif
 # endif
-# if !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_MSWIN)
+# if !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_MSWIN) \
+	&& !defined(FEAT_GUI_IUP)
     Dimension		screen_width;	// screen width in pixels
     Dimension		screen_height;	// screen height in pixels
 # endif

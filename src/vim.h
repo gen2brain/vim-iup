@@ -134,7 +134,8 @@
     || defined(FEAT_GUI_GTK) \
     || defined(FEAT_GUI_HAIKU) \
     || defined(FEAT_GUI_MSWIN) \
-    || defined(FEAT_GUI_PHOTON)
+    || defined(FEAT_GUI_PHOTON) \
+    || defined(FEAT_GUI_IUP)
 # if !defined(FEAT_GUI) && !defined(NO_X11_INCLUDES)
 #  define FEAT_GUI
 # endif
@@ -2551,7 +2552,7 @@ typedef int (*opt_expand_cb_T)(optexpand_T *args, int *numMatches, char_u ***mat
 // been seen at that stage.  But it must be before globals.h, where error_ga
 // is declared.
 #if !defined(MSWIN) && !defined(FEAT_GUI_X11) && !defined(FEAT_GUI_HAIKU) \
-	&& !defined(FEAT_GUI_GTK) && !defined(PROTO)
+	&& !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_IUP) && !defined(PROTO)
 # define mch_errmsg(str)	fprintf(stderr, "%s", (str))
 # define display_errors()	fflush(stderr)
 # define mch_msg(str)		printf("%s", (str))
@@ -2727,7 +2728,7 @@ in_vim9script(void)
 #endif
 
 #if defined(FEAT_GUI) && defined(FEAT_XCLIPBOARD)
-# ifdef FEAT_GUI_GTK
+# if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_IUP)
    // Avoid using a global variable for the X display.  It's ugly
    // and is likely to cause trouble in multihead environments.
 #  define X_DISPLAY	((gui.in_use) ? gui_mch_get_display() : xterm_dpy)
@@ -2735,7 +2736,7 @@ in_vim9script(void)
 #  define X_DISPLAY	(gui.in_use ? gui.dpy : xterm_dpy)
 # endif
 #elif defined(FEAT_GUI)
-# ifdef FEAT_GUI_GTK
+# if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_IUP)
 #  define X_DISPLAY	((gui.in_use) ? gui_mch_get_display() : (Display *)NULL)
 # else
 #  define X_DISPLAY	gui.dpy
