@@ -646,6 +646,30 @@ func Test_expand_guifont()
 
     let &guifontwide = guifontwide_saved
     let &guifont     = guifont_saved
+  elseif has('gui_iup')
+    let guifont_saved = &guifont
+    let guifontwide_saved = &guifontwide
+
+    " Test recalling default and existing option
+    set guifont=
+    call assert_match('^Monospace\>', getcompletion('set guifont=', 'cmdline')[0])
+    set guifont=Monospace\ 9
+    call assert_equal('Monospace\ 9', getcompletion('set guifont=', 'cmdline')[0])
+
+    " Make sure non-monospace fonts are filtered out only in 'guifont'
+    set guifont=
+    let mono_fonts = getcompletion('set guifont=', 'cmdline')
+    let all_fonts = getcompletion('set guifontwide=', 'cmdline')
+    call assert_true(len(mono_fonts) > 1, 'monospace fonts were found')
+    call assert_true(len(all_fonts) > len(mono_fonts),
+          \ 'proportional fonts are offered only for guifontwide')
+
+    " A family offered for 'guifont' is also offered for 'guifontwide'
+    call assert_equal([mono_fonts[-1]],
+          \ getcompletion('set guifontwide=' .. mono_fonts[-1] .. '$', 'cmdline'))
+
+    let &guifontwide = guifontwide_saved
+    let &guifont     = guifont_saved
   else
     call assert_equal([], getcompletion('set guifont=', 'cmdline'))
   endif
@@ -1997,6 +2021,117 @@ func Test_tabnew_tabclose_size_stable()
   endif
 
   call delete('Xtest_tabsize')
+endfunc
+
+" Basic editing and window operations in the IUP GUI.  Every crash this port has
+" had killed gvim before it could write the file, so a missing result is a
+" failure as much as a wrong value.
+func Test_iup_basic_operations()
+  CheckCanRunGui
+  CheckFeature gui_iup
+
+  let after =<< trim [CODE]
+    let result = []
+
+    set lines=25 columns=80
+    sleep 200m
+    call add(result, &lines .. 'x' .. &columns)
+
+    call setline(1, ['alpha', 'beta', 'gamma'])
+    let &undolevels = &undolevels
+    normal! Gdd
+    call add(result, string(line('$')))
+    normal! u
+    call add(result, string(line('$')))
+    call add(result, string(search('beta', 'nw')))
+
+    tabnew
+    tabnew
+    sleep 200m
+    tabfirst
+    sleep 200m
+    call add(result, string(tabpagenr('$')))
+    tabonly!
+    sleep 200m
+    call add(result, string(tabpagenr('$')))
+    call add(result, &lines .. 'x' .. &columns)
+
+    split
+    vsplit
+    call add(result, string(winnr('$')))
+    only!
+    call add(result, string(winnr('$')))
+
+    let s:font = &guifont
+    let &guifont = s:font
+    sleep 200m
+    call add(result, &lines .. 'x' .. &columns)
+
+    normal! gg
+    normal! G
+    redraw!
+    call add(result, string(line('.')))
+
+    call system('echo iup')
+    call add(result, string(v:shell_error))
+
+    call writefile(result, 'Xtest_iup_basic')
+    qall!
+  [CODE]
+
+  if RunVim([], after, '-f -g')
+    let r = readfile('Xtest_iup_basic')
+    call assert_equal('25x80', r[0], 'lines and columns after :set')
+    call assert_equal('2', r[1], 'a line was deleted')
+    call assert_equal('3', r[2], 'undo brought the line back')
+    call assert_equal('2', r[3], 'search found the second line')
+    call assert_equal('3', r[4], 'three tab pages')
+    call assert_equal('1', r[5], 'one tab page after :tabonly')
+    call assert_equal('25x80', r[6], 'size unchanged by the tab line')
+    call assert_equal('3', r[7], 'three windows after the splits')
+    call assert_equal('1', r[8], 'one window after :only')
+    call assert_equal('25x80', r[9], 'size unchanged by reloading the font')
+    call assert_equal('3', r[10], 'cursor moved to the last line')
+    call assert_equal('0', r[11], 'the shell command succeeded')
+  endif
+
+  call delete('Xtest_iup_basic')
+endfunc
+
+" Job output in the IUP GUI.  The channel descriptor has to be registered with
+" the main loop, or the output callback is never invoked.
+func Test_iup_channel_callback()
+  CheckCanRunGui
+  CheckFeature gui_iup
+  CheckFeature job
+
+  let after =<< trim [CODE]
+    let result = []
+    let g:out = []
+
+    func! JobOut(ch, msg)
+      call add(g:out, a:msg)
+    endfunc
+
+    let opts = {'out_cb': 'JobOut'}
+    let g:job = job_start([&shell, &shellcmdflag, 'echo hello-from-job'], opts)
+    let i = 0
+    while empty(g:out) && i < 100
+      sleep 50m
+      let i += 1
+    endwhile
+    call add(result, empty(g:out) ? 'MISSING' : g:out[0])
+
+    call writefile(result, 'Xtest_iup_channel')
+    qall!
+  [CODE]
+
+  if RunVim([], after, '-f -g')
+    let r = readfile('Xtest_iup_channel')
+    call assert_equal('hello-from-job', r[0], 'the job output callback was invoked')
+  endif
+
+  call delete('Xtest_iup_channel')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
