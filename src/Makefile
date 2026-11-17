@@ -357,6 +357,8 @@ CClink = $(CC)
 #CONF_OPT_GUI = --enable-gui=gtk3 --disable-gtktest
 #CONF_OPT_GUI = --enable-gui=motif
 #CONF_OPT_GUI = --enable-gui=motif --with-motif-lib="-static -lXm -shared"
+#CONF_OPT_GUI = --enable-gui=iup
+#CONF_OPT_GUI = --enable-gui=iup --with-iup-static
 
 # Uncomment this line to run an individual test with gvim.
 #GUI_TESTARG = GUI_FLAG=-g
@@ -1307,6 +1309,20 @@ PHOTONGUI_MAN_TARGETS = yes
 PHOTONGUI_TESTTARGET = gui
 PHOTONGUI_BUNDLE =
 
+# IUP GUI
+IUPGUI_SRC	= gui.c gui_iup.c
+IUPGUI_OBJ	= objects/gui.o objects/gui_iup.o
+IUPGUI_DEFS	= -DFEAT_GUI_IUP
+IUPGUI_IPATH	= $(GUI_INC_LOC)
+IUPGUI_LIBS_DIR	= $(GUI_LIB_LOC)
+IUPGUI_LIBS1	= $(IUP_LIBNAME)
+IUPGUI_LIBS2	=
+IUPGUI_INSTALL	= install_normal install_gui_extra
+IUPGUI_TARGETS	= installglinks
+IUPGUI_MAN_TARGETS = yes
+IUPGUI_TESTTARGET = gui
+IUPGUI_BUNDLE	=
+
 ### Haiku GUI
 HAIKUGUI_SRC	= gui.c gui_haiku.cc
 HAIKUGUI_OBJ	= objects/gui.o objects/gui_haiku.o
@@ -1322,8 +1338,8 @@ HAIKUGUI_TESTTARGET = gui
 HAIKUGUI_BUNDLE =
 
 # All GUI files
-ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_gtk4.c gui_gtk4_f.c gui_gtk4_cb.c gui_gtk4_da.c gui_gtk4_tb.c gui_gtk4_menu.c gui_motif.c gui_xmdlg.c gui_xmebw.c gui_gtk_x11.c gui_x11.c gui_haiku.cc
-ALL_GUI_PRO  = proto/gui.pro proto/gui_gtk.pro proto/gui_gtk4.pro proto/gui_motif.pro proto/gui_xmdlg.pro proto/gui_gtk_x11.pro proto/gui_x11.pro proto/gui_w32.pro proto/gui_photon.pro
+ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_gtk4.c gui_gtk4_f.c gui_gtk4_cb.c gui_gtk4_da.c gui_gtk4_tb.c gui_gtk4_menu.c gui_motif.c gui_xmdlg.c gui_xmebw.c gui_gtk_x11.c gui_x11.c gui_haiku.cc gui_iup.c
+ALL_GUI_PRO  = proto/gui.pro proto/gui_gtk.pro proto/gui_gtk4.pro proto/gui_motif.pro proto/gui_xmdlg.pro proto/gui_gtk_x11.pro proto/gui_x11.pro proto/gui_w32.pro proto/gui_photon.pro proto/gui_iup.pro
 
 # }}}
 
@@ -2122,7 +2138,7 @@ nvcmdidxs: auto/config.mk nv_cmds.h
 
 # The normal command to compile a .c file to its .o file.
 # Without or with ALL_CFLAGS.
-CCC_NF = $(CC) -c -I$(srcdir)
+CCC_NF = $(CC) -c -iquote$(srcdir)
 CCC = $(CCC_NF) $(ALL_CFLAGS)
 
 
@@ -3460,6 +3476,9 @@ objects/gui_xim.o: gui_xim.c
 objects/gui_photon.o: gui_photon.c
 	$(CCC) -o $@ gui_photon.c
 
+objects/gui_iup.o: gui_iup.c
+	$(CCC) -o $@ gui_iup.c
+
 objects/highlight.o: highlight.c
 	$(CCC) -o $@ highlight.c
 
@@ -4626,6 +4645,27 @@ objects/gui_haiku.o: auto/osdef.h gui_haiku.cc vim.h protodef.h auto/config.h fe
  structs.h regexp.h gui.h libvterm/include/vterm.h \
  libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
  globals.h errors.h version.h
+objects/gui_iup.o: auto/osdef.h gui_iup.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ structs.h regexp.h gui.h image.h \
+ libvterm/include/vterm.h libvterm/include/vterm_keycodes.h xdiff/xdiff.h \
+ xdiff/../vim.h alloc.h ex_cmds.h spell.h proto.h globals.h errors.h \
+ ../runtime/vim48x48.xpm gui_x11_pm.h ../pixmaps/tb_new.xpm \
+ ../pixmaps/tb_open.xpm ../pixmaps/tb_close.xpm ../pixmaps/tb_save.xpm \
+ ../pixmaps/tb_print.xpm ../pixmaps/tb_cut.xpm ../pixmaps/tb_copy.xpm \
+ ../pixmaps/tb_paste.xpm ../pixmaps/tb_find.xpm \
+ ../pixmaps/tb_find_next.xpm ../pixmaps/tb_find_prev.xpm \
+ ../pixmaps/tb_find_help.xpm ../pixmaps/tb_exit.xpm \
+ ../pixmaps/tb_undo.xpm ../pixmaps/tb_redo.xpm ../pixmaps/tb_help.xpm \
+ ../pixmaps/tb_macro.xpm ../pixmaps/tb_make.xpm \
+ ../pixmaps/tb_save_all.xpm ../pixmaps/tb_jump.xpm \
+ ../pixmaps/tb_ctags.xpm ../pixmaps/tb_load_session.xpm \
+ ../pixmaps/tb_save_session.xpm ../pixmaps/tb_new_session.xpm \
+ ../pixmaps/tb_blank.xpm ../pixmaps/tb_maximize.xpm \
+ ../pixmaps/tb_split.xpm ../pixmaps/tb_minimize.xpm \
+ ../pixmaps/tb_shell.xpm ../pixmaps/tb_replace.xpm \
+ ../pixmaps/tb_vsplit.xpm ../pixmaps/tb_maxwidth.xpm \
+ ../pixmaps/tb_minwidth.xpm
 objects/json_test.o: auto/osdef.h json_test.c main.c vim.h protodef.h auto/config.h feature.h \
  os_unix.h ascii.h keymap.h termdefs.h macros.h option.h \
  beval.h structs.h regexp.h gui.h \
